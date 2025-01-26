@@ -1,7 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import useVideoCallPermissions from '../hooks/useVideoCallPermissions'
-import { mediaDevices, RTCView } from 'react-native-webrtc';
+import { mediaDevices, RTCPeerConnection, RTCView } from 'react-native-webrtc';
 import { videoResolutions } from '../utils/helper';
 import socketServices from '../api/socketServices';
 import { useRoute } from '@react-navigation/native';
@@ -13,11 +13,35 @@ const VideoCallScreen = () => {
 
     const { permissionsGranted, checkAndRequestPermissions } = useVideoCallPermissions();
 
+    // const peerConnection = useRef(
+    //     new RTCPeerConnection({
+    //         iceServers: [
+    //             {
+    //                 urls: 'stun:stun.l.google.com:19302',
+    //             },
+    //             {
+    //                 urls: 'stun:stun1.l.google.com:19302',
+    //             },
+    //             {
+    //                 urls: 'stun:stun2.l.google.com:19302',
+    //             },
+    //         ],
+    //     }),
+    // );
+
     // Local User
     const [localStream, setLocalStream] = useState(null);
 
     // Remote User
     const [remoteStream, setRemoteStream] = useState(null);
+
+    useEffect(() => {
+        socketServices.emit('JoinSocket', localUserId);
+        return () => {
+            socketServices.emit('LeaveSocket', localUserId);
+            onHangUpPress();
+        }
+    }, [])
 
     const onGetLocalStreamPress = async () => {
         try {
@@ -46,14 +70,6 @@ const VideoCallScreen = () => {
             setRemoteStream(null);
         }
     };
-
-    useEffect(() => {
-        socketServices.emit('JoinSocket', localUserId);
-        return () => {
-            socketServices.emit('LeaveSocket', localUserId);
-            onHangUpPress();
-        }
-    }, [])
 
     return (
         <View style={styles.Container}>

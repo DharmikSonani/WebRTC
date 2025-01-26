@@ -14,8 +14,8 @@ const JoinCallScreen = () => {
 
     const onJoinPress = () => {
         navigation.navigate(Screens.VideoCallScreen, {
-            localUserId: currentUserId,
-            remoteUserId: remoteUserId,
+            localUserId: currentUserId.trim(),
+            remoteUserId: remoteUserId.trim(),
         });
     }
 

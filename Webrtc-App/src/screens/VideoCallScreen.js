@@ -1,7 +1,8 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import useVideoCallPermissions from '../hooks/useVideoCallPermissions'
 import { mediaDevices, RTCView } from 'react-native-webrtc';
+import { videoResolutions } from '../utils/helper';
 
 const VideoCallScreen = () => {
 
@@ -17,7 +18,7 @@ const VideoCallScreen = () => {
             };
             const stream = await mediaDevices.getUserMedia({
                 audio: true,
-                video: true,
+                video: videoResolutions.QHD_1440p,
             });
             setLocalStream(stream);
             setRemoteStream(stream);
@@ -36,6 +37,12 @@ const VideoCallScreen = () => {
             setRemoteStream(null);
         }
     };
+
+    useEffect(() => {
+        return () => {
+            onHangUpPress();
+        }
+    }, [])
 
     return (
         <View style={styles.Container}>

@@ -1,8 +1,15 @@
-import React from 'react'
-import VideoCallScreen from './screens/VideoCallScreen'
+import React, { useEffect } from 'react'
 import { StatusBar } from 'react-native'
+import { NavigationContainer } from '@react-navigation/native';
+import { NavigationHandler } from './routes';
+import socketServices from './api/socketServices';
 
 const App = () => {
+
+  useEffect(() => {
+    socketServices.initializeSocket();
+  }, [])
+
   return (
     <>
       <StatusBar
@@ -10,7 +17,9 @@ const App = () => {
         translucent
         backgroundColor={'#00000000'}
       />
-      <VideoCallScreen />
+      <NavigationContainer>
+        <NavigationHandler />
+      </NavigationContainer>
     </>
   )
 }

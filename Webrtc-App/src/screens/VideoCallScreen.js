@@ -3,11 +3,20 @@ import React, { useEffect, useState } from 'react'
 import useVideoCallPermissions from '../hooks/useVideoCallPermissions'
 import { mediaDevices, RTCView } from 'react-native-webrtc';
 import { videoResolutions } from '../utils/helper';
+import socketServices from '../api/socketServices';
+import { useRoute } from '@react-navigation/native';
 
 const VideoCallScreen = () => {
 
+    const route = useRoute();
+    const { localUserId, remoteUserId } = route?.params;
+
     const { permissionsGranted, checkAndRequestPermissions } = useVideoCallPermissions();
+
+    // Local User
     const [localStream, setLocalStream] = useState(null);
+
+    // Remote User
     const [remoteStream, setRemoteStream] = useState(null);
 
     const onGetLocalStreamPress = async () => {
@@ -39,7 +48,9 @@ const VideoCallScreen = () => {
     };
 
     useEffect(() => {
+        socketServices.emit('JoinSocket', localUserId);
         return () => {
+            socketServices.emit('LeaveSocket', localUserId);
             onHangUpPress();
         }
     }, [])
@@ -92,8 +103,6 @@ const styles = StyleSheet.create({
     Container: {
         flex: 1,
         backgroundColor: '#FFF',
-        justifyContent: 'center',
-        alignItems: 'center',
     },
     RTCViewStyle: {
         width: '100%',
@@ -125,6 +134,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 50,
         zIndex: 10,
+        alignSelf: 'center',
     },
     HangUpButton: {
         backgroundColor: '#F44336',

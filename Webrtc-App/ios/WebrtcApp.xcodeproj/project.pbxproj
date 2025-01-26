@@ -12,9 +12,9 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		5D06EE8DDF5A8C0372F704CB /* libPods-WebrtcApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F629921FD44CAF798C537771 /* libPods-WebrtcApp.a */; };
+		62543BEA24C0FEE71971E0C1 /* libPods-WebrtcApp-WebrtcAppTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B2B83820F665070CE29223E /* libPods-WebrtcApp-WebrtcAppTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		FBE88B41108AFD5CCA543630 /* libPods-WebrtcApp-WebrtcAppTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DF383B87C3F408292DDB45E4 /* libPods-WebrtcApp-WebrtcAppTests.a */; };
+		E2AD2E00158D11E71FA9E82B /* libPods-WebrtcApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F64CC669013E051CE3C5AEBE /* libPods-WebrtcApp.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,14 +38,14 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = WebrtcApp/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = WebrtcApp/main.m; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = WebrtcApp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		17F14D332B1719DA02CDE148 /* Pods-WebrtcApp-WebrtcAppTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WebrtcApp-WebrtcAppTests.release.xcconfig"; path = "Target Support Files/Pods-WebrtcApp-WebrtcAppTests/Pods-WebrtcApp-WebrtcAppTests.release.xcconfig"; sourceTree = "<group>"; };
+		28884D47FC5FB9D8B6BB12FD /* Pods-WebrtcApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WebrtcApp.debug.xcconfig"; path = "Target Support Files/Pods-WebrtcApp/Pods-WebrtcApp.debug.xcconfig"; sourceTree = "<group>"; };
+		3CB11FB975088F66A0BE9DCE /* Pods-WebrtcApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WebrtcApp.release.xcconfig"; path = "Target Support Files/Pods-WebrtcApp/Pods-WebrtcApp.release.xcconfig"; sourceTree = "<group>"; };
+		44E925E7397BD7113E249EC5 /* Pods-WebrtcApp-WebrtcAppTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WebrtcApp-WebrtcAppTests.debug.xcconfig"; path = "Target Support Files/Pods-WebrtcApp-WebrtcAppTests/Pods-WebrtcApp-WebrtcAppTests.debug.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = WebrtcApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		C4C52DDB51689E6D56C0B91C /* Pods-WebrtcApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WebrtcApp.release.xcconfig"; path = "Target Support Files/Pods-WebrtcApp/Pods-WebrtcApp.release.xcconfig"; sourceTree = "<group>"; };
-		CB1283EFE31BA0813DBE7BD4 /* Pods-WebrtcApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WebrtcApp.debug.xcconfig"; path = "Target Support Files/Pods-WebrtcApp/Pods-WebrtcApp.debug.xcconfig"; sourceTree = "<group>"; };
-		D64E021192ED586B336CFEAB /* Pods-WebrtcApp-WebrtcAppTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WebrtcApp-WebrtcAppTests.debug.xcconfig"; path = "Target Support Files/Pods-WebrtcApp-WebrtcAppTests/Pods-WebrtcApp-WebrtcAppTests.debug.xcconfig"; sourceTree = "<group>"; };
-		DF383B87C3F408292DDB45E4 /* libPods-WebrtcApp-WebrtcAppTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WebrtcApp-WebrtcAppTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9B2B83820F665070CE29223E /* libPods-WebrtcApp-WebrtcAppTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WebrtcApp-WebrtcAppTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D08BFCE6F575B1C472526360 /* Pods-WebrtcApp-WebrtcAppTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WebrtcApp-WebrtcAppTests.release.xcconfig"; path = "Target Support Files/Pods-WebrtcApp-WebrtcAppTests/Pods-WebrtcApp-WebrtcAppTests.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		F629921FD44CAF798C537771 /* libPods-WebrtcApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WebrtcApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F64CC669013E051CE3C5AEBE /* libPods-WebrtcApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WebrtcApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,7 +53,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FBE88B41108AFD5CCA543630 /* libPods-WebrtcApp-WebrtcAppTests.a in Frameworks */,
+				62543BEA24C0FEE71971E0C1 /* libPods-WebrtcApp-WebrtcAppTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -61,7 +61,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5D06EE8DDF5A8C0372F704CB /* libPods-WebrtcApp.a in Frameworks */,
+				E2AD2E00158D11E71FA9E82B /* libPods-WebrtcApp.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -103,8 +103,8 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				F629921FD44CAF798C537771 /* libPods-WebrtcApp.a */,
-				DF383B87C3F408292DDB45E4 /* libPods-WebrtcApp-WebrtcAppTests.a */,
+				F64CC669013E051CE3C5AEBE /* libPods-WebrtcApp.a */,
+				9B2B83820F665070CE29223E /* libPods-WebrtcApp-WebrtcAppTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -143,10 +143,10 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				CB1283EFE31BA0813DBE7BD4 /* Pods-WebrtcApp.debug.xcconfig */,
-				C4C52DDB51689E6D56C0B91C /* Pods-WebrtcApp.release.xcconfig */,
-				D64E021192ED586B336CFEAB /* Pods-WebrtcApp-WebrtcAppTests.debug.xcconfig */,
-				17F14D332B1719DA02CDE148 /* Pods-WebrtcApp-WebrtcAppTests.release.xcconfig */,
+				28884D47FC5FB9D8B6BB12FD /* Pods-WebrtcApp.debug.xcconfig */,
+				3CB11FB975088F66A0BE9DCE /* Pods-WebrtcApp.release.xcconfig */,
+				44E925E7397BD7113E249EC5 /* Pods-WebrtcApp-WebrtcAppTests.debug.xcconfig */,
+				D08BFCE6F575B1C472526360 /* Pods-WebrtcApp-WebrtcAppTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -158,12 +158,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "WebrtcAppTests" */;
 			buildPhases = (
-				09E555A7AE8739BBF7A47098 /* [CP] Check Pods Manifest.lock */,
+				D0795A6CBD771893DD9E6B5D /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
-				BED0CF28704A498FF37C73BB /* [CP] Embed Pods Frameworks */,
-				4ABD3959DD8C69AB5D019DC9 /* [CP] Copy Pods Resources */,
+				BA65C9C21681B02D16A4B5E9 /* [CP] Embed Pods Frameworks */,
+				29303E1E22F6186F13F4BC7D /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -179,13 +179,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "WebrtcApp" */;
 			buildPhases = (
-				047943EC40DD48DC30D9AD59 /* [CP] Check Pods Manifest.lock */,
+				872DC5B3C5B29288912483EE /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				FA087B8C862323CE69013B42 /* [CP] Embed Pods Frameworks */,
-				8DE1D1748F4B4F7C900B0CF7 /* [CP] Copy Pods Resources */,
+				0D23041F91865428F8611681 /* [CP] Embed Pods Frameworks */,
+				285183F83F55819530A20601 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -269,7 +269,58 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		047943EC40DD48DC30D9AD59 /* [CP] Check Pods Manifest.lock */ = {
+		0D23041F91865428F8611681 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp/Pods-WebrtcApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp/Pods-WebrtcApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp/Pods-WebrtcApp-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		285183F83F55819530A20601 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp/Pods-WebrtcApp-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp/Pods-WebrtcApp-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp/Pods-WebrtcApp-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		29303E1E22F6186F13F4BC7D /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp-WebrtcAppTests/Pods-WebrtcApp-WebrtcAppTests-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp-WebrtcAppTests/Pods-WebrtcApp-WebrtcAppTests-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp-WebrtcAppTests/Pods-WebrtcApp-WebrtcAppTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		872DC5B3C5B29288912483EE /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -291,7 +342,24 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		09E555A7AE8739BBF7A47098 /* [CP] Check Pods Manifest.lock */ = {
+		BA65C9C21681B02D16A4B5E9 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp-WebrtcAppTests/Pods-WebrtcApp-WebrtcAppTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp-WebrtcAppTests/Pods-WebrtcApp-WebrtcAppTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp-WebrtcAppTests/Pods-WebrtcApp-WebrtcAppTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D0795A6CBD771893DD9E6B5D /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -311,74 +379,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		4ABD3959DD8C69AB5D019DC9 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp-WebrtcAppTests/Pods-WebrtcApp-WebrtcAppTests-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp-WebrtcAppTests/Pods-WebrtcApp-WebrtcAppTests-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp-WebrtcAppTests/Pods-WebrtcApp-WebrtcAppTests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		8DE1D1748F4B4F7C900B0CF7 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp/Pods-WebrtcApp-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp/Pods-WebrtcApp-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp/Pods-WebrtcApp-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		BED0CF28704A498FF37C73BB /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp-WebrtcAppTests/Pods-WebrtcApp-WebrtcAppTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp-WebrtcAppTests/Pods-WebrtcApp-WebrtcAppTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp-WebrtcAppTests/Pods-WebrtcApp-WebrtcAppTests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		FA087B8C862323CE69013B42 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp/Pods-WebrtcApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp/Pods-WebrtcApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-WebrtcApp/Pods-WebrtcApp-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -414,7 +414,7 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D64E021192ED586B336CFEAB /* Pods-WebrtcApp-WebrtcAppTests.debug.xcconfig */;
+			baseConfigurationReference = 44E925E7397BD7113E249EC5 /* Pods-WebrtcApp-WebrtcAppTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -441,7 +441,7 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 17F14D332B1719DA02CDE148 /* Pods-WebrtcApp-WebrtcAppTests.release.xcconfig */;
+			baseConfigurationReference = D08BFCE6F575B1C472526360 /* Pods-WebrtcApp-WebrtcAppTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
@@ -465,7 +465,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = CB1283EFE31BA0813DBE7BD4 /* Pods-WebrtcApp.debug.xcconfig */;
+			baseConfigurationReference = 28884D47FC5FB9D8B6BB12FD /* Pods-WebrtcApp.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -498,7 +498,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C4C52DDB51689E6D56C0B91C /* Pods-WebrtcApp.release.xcconfig */;
+			baseConfigurationReference = 3CB11FB975088F66A0BE9DCE /* Pods-WebrtcApp.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

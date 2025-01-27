@@ -1,9 +1,13 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { StatusBar } from 'react-native'
 import { NavigationContainer } from '@react-navigation/native';
 import { NavigationHandler } from './routes';
+import socketServices from './api/socketServices';
 
 const App = () => {
+
+  useEffect(() => { socketServices.initializeSocket() }, [])
+
   return (
     <>
       <StatusBar

@@ -28,7 +28,7 @@ const JoinCallScreen = () => {
                 placeholder="Enter Current User ID"
                 value={currentUserId}
                 onChangeText={setCurrentUserId}
-                maxLength={10}
+                maxLength={1}
             />
 
             <TextInput
@@ -36,7 +36,7 @@ const JoinCallScreen = () => {
                 placeholder="Enter Remote User ID"
                 value={remoteUserId}
                 onChangeText={setRemoteUserId}
-                maxLength={10}
+                maxLength={1}
             />
 
             <TouchableOpacity

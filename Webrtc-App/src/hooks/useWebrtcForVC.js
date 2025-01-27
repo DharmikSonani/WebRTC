@@ -120,6 +120,7 @@ export const useWebrtcForVC = ({
         stopMediaStream(remoteStream);
         setLocalStream(null);
         setRemoteStream(null);
+        InCallManager.setKeepScreenOn(false);
         InCallManager.stop();
     }
 

@@ -19,6 +19,8 @@ const VideoCallScreen = () => {
     const { localUserId, remoteUserId } = route?.params;
     const [callConnected, setCallConnected] = useState(false);
     const [isBigScaleLocalView, setIsBigScaleLocalView] = useState(false);
+    const [toggleMic, setToggleMic] = useState(true);
+    const [toggleSpeaker, setToggleSpeaker] = useState(true);
 
     // Custom Hooks
     const { permissionsGranted, checkAndRequestPermissions } = useVideoCallPermissions();
@@ -78,6 +80,7 @@ const VideoCallScreen = () => {
                 if (!permission) return;
             };
 
+            InCallManager.setKeepScreenOn(true);
             InCallManager.setSpeakerphoneOn(true);
             InCallManager.start({ media: 'video' });
 
@@ -119,6 +122,7 @@ const VideoCallScreen = () => {
                         await peerConnection.current.setRemoteDescription(data.offer);
 
                         InCallManager.setSpeakerphoneOn(true);
+                        InCallManager.setKeepScreenOn(true);
                         InCallManager.start({ media: 'video' });
 
                         const stream = await mediaDevices.getUserMedia({
@@ -196,6 +200,23 @@ const VideoCallScreen = () => {
         setIsBigScaleLocalView(pre => !pre);
     }
 
+    const onToggleMic = () => {
+        setToggleMic(pre => !pre);
+        toggleAudio(localStream);
+    }
+
+    const onToggleSpeaker = () => {
+        setToggleSpeaker(pre => !pre);
+        toggleAudio(remoteStream);
+    }
+
+    const toggleAudio = (stream) => {
+        if (stream) {
+            const audioTrack = stream.getAudioTracks()[0];
+            audioTrack && (audioTrack.enabled = !audioTrack.enabled)
+        }
+    }
+
     return (
         <View style={styles.Container}>
             {
@@ -244,16 +265,26 @@ const VideoCallScreen = () => {
                     </View>
             }
 
-            {
-                (remoteStream || localStream) ?
-                    <TouchableOpacity style={[styles.Button, styles.HangUpButton]} onPress={onHangUpPress}>
-                        <Text style={styles.ButtonText}>Hang Up</Text>
-                    </TouchableOpacity>
-                    :
-                    <TouchableOpacity style={styles.Button} onPress={onStartCall}>
-                        <Text style={styles.ButtonText}>Start</Text>
-                    </TouchableOpacity>
-            }
+            <View style={styles.ButtonContainer}>
+                {
+                    (remoteStream || localStream) ?
+                        <>
+                            <TouchableOpacity style={[styles.Button, !toggleSpeaker && styles.HangUpButton]} onPress={onToggleSpeaker} activeOpacity={1}>
+                                <Text style={styles.ButtonText}>{toggleSpeaker ? 'SE' : 'SD'}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.Button, styles.HangUpButton]} onPress={onHangUpPress}>
+                                <Text style={styles.ButtonText}>Hang Up</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.Button, !toggleMic && styles.HangUpButton]} onPress={onToggleMic} activeOpacity={1}>
+                                <Text style={styles.ButtonText}>{toggleMic ? 'ME' : 'MD'}</Text>
+                            </TouchableOpacity>
+                        </>
+                        :
+                        <TouchableOpacity style={styles.Button} onPress={onStartCall}>
+                            <Text style={styles.ButtonText}>Start</Text>
+                        </TouchableOpacity>
+                }
+            </View>
         </View>
     )
 }
@@ -290,6 +321,15 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         zIndex: 100,
     },
+    ButtonContainer: {
+        zIndex: 10,
+        position: 'absolute',
+        bottom: 50,
+        flexDirection: 'row',
+        justifyContent: 'space-evenly',
+        alignItems: 'center',
+        width: '100%',
+    },
     Button: {
         backgroundColor: '#4CAF50',
         paddingVertical: 10,
@@ -297,10 +337,6 @@ const styles = StyleSheet.create({
         borderRadius: 18,
         alignItems: 'center',
         justifyContent: 'center',
-        position: 'absolute',
-        bottom: 50,
-        zIndex: 10,
-        alignSelf: 'center',
     },
     HangUpButton: {
         backgroundColor: '#F44336',

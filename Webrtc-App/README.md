@@ -535,3 +535,208 @@ With this setup, you can easily manage WebRTC-based video calls in your React Na
 
 --------------------------------------------------------------------------------------------------------------------------------------------
 
+# Usage Video Call Screen Setup Guide
+
+## Overview
+This guide provides detailed instructions on how to set up and use the `VideoCallScreen` component in your React Native application. The component is designed for video calling using WebRTC, allowing users to make and receive video calls.
+
+### Features:
+- **Video Streaming**: Displays local and remote video streams.
+- **Call Management**: Allows users to start, accept, reject, and hang up calls.
+- **Audio Control**: Provides toggles for enabling/disabling the microphone and speaker.
+- **Responsive UI**: Automatically adjusts to screen size and supports local and remote video views.
+
+## Prerequisites
+
+Before you can use the `VideoCallScreen`, ensure that you have the following dependencies installed:
+
+1. **React Native** - A framework for building mobile apps.
+2. **react-native-webrtc** - WebRTC library for video calling.
+3. **Socket.io** - For real-time bidirectional communication.
+4. **react-navigation** - For navigation between screens.
+
+You can install the required dependencies by running the following commands:
+
+```bash
+npm install react-native-webrtc react-navigation react-navigation-stack socket.io-client react-native-permissions
+```
+
+## Setting Up the Video Call Screen
+
+### 1. Create the `VideoCallScreen` Component
+
+The `VideoCallScreen` component handles video call functionality, including initiating a call, receiving calls, managing the video streams, and toggling the microphone and speaker. 
+
+### 2. Component Breakdown
+
+```javascript
+import { Alert, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { RTCView } from 'react-native-webrtc';
+import socketServices from '../api/socketServices';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { useWebrtcForVC } from '../hooks/useWebrtcForVC';
+
+const { width, height } = Dimensions.get('screen');
+```
+
+- **RTCView**: Used to display the video streams (local and remote).
+- **socketServices**: Manages the communication through WebSockets (like offer, answer, candidate, etc.).
+- **useWebrtcForVC**: Custom hook to manage WebRTC functionalities.
+
+### 3. Parameters and Socket Management
+
+- `localUserId` and `remoteUserId`: These are passed through the route params and are used to identify the users involved in the call.
+- The `useEffect` hook sets up the socket listeners to handle incoming offers, answers, candidates, and hangups.
+- **Socket Events**:
+    - `offer`: Received when the remote user initiates a call.
+    - `answer`: Sent when the local user accepts the call.
+    - `candidate`: ICE candidate for establishing the connection.
+    - `hangup`: Ends the call.
+
+```javascript
+useEffect(() => {
+    socketServices.emit('JoinSocket', localUserId);
+
+    socketServices.on('offer', handleIncomingCall);
+    socketServices.on('answer', handleAnswer);
+    socketServices.on('candidate', (data) => { handleCandidate(remoteUserId, data) });
+    socketServices.on('hangup', handleRemoteHangup);
+
+    return () => {
+        socketServices.emit('LeaveSocket', localUserId);
+        socketServices.removeListener('offer');
+        socketServices.removeListener('answer');
+        socketServices.removeListener('candidate');
+        socketServices.removeListener('hangup');
+    }
+}, [])
+```
+
+### 4. User Actions
+
+- **Start Call**: Initiates the call by calling `onStartCall`.
+- **Accept Call**: Accepts the incoming call through the `onCallAccept` method.
+- **Hang Up**: Ends the call by emitting the `hangup` event.
+- **Toggle Mic/Speaker**: The microphone and speaker can be toggled using `onToggleMic` and `onToggleSpeaker`.
+
+### 5. UI Components
+
+The UI consists of:
+
+- **RTCView for Remote Video**: Displays the video of the remote user.
+- **RTCView for Local Video**: Displays the local user's video in a small thumbnail.
+- **Buttons**: Allow users to start the call, toggle the microphone and speaker, and hang up.
+
+```javascript
+<View style={styles.ButtonContainer}>
+    {(remoteStream || localStream) ? (
+        <>
+            <TouchableOpacity style={[styles.Button, !speakerEnable && styles.HangUpButton]} onPress={onToggleSpeaker} activeOpacity={1}>
+                <Text style={styles.ButtonText}>{speakerEnable ? 'SE' : 'SD'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.Button, styles.HangUpButton]} onPress={onHangUpPress}>
+                <Text style={styles.ButtonText}>Hang Up</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.Button, !micEnable && styles.HangUpButton]} onPress={onToggleMic} activeOpacity={1}>
+                <Text style={styles.ButtonText}>{micEnable ? 'ME' : 'MD'}</Text>
+            </TouchableOpacity>
+        </>
+    ) : (
+        <TouchableOpacity style={styles.Button} onPress={onStartCall}>
+            <Text style={styles.ButtonText}>Start</Text>
+        </TouchableOpacity>
+    )}
+</View>
+```
+
+### 6. Handling Incoming Call
+
+When an incoming call is received, the app shows an alert with the options to accept or reject the call.
+
+```javascript
+const handleIncomingCall = (data) => {
+    Alert.alert('Incoming Call', 'Accept the call?', [
+        {
+            text: 'Reject',
+            onPress: onHangUpPress,
+            style: 'cancel',
+        },
+        {
+            text: 'Accept',
+            onPress: () => { onCallAccept(data) },
+        },
+    ]);
+}
+```
+
+### 7. Handling Remote Hangup
+
+When the remote user ends the call, the app will show an alert and navigate back to the previous screen.
+
+```javascript
+const handleRemoteHangup = () => {
+    try {
+        Alert.alert('Call Ended', 'Call has been ended.');
+        navigation.canGoBack() && navigation.goBack();
+    } catch (error) {
+        console.log(`Handle Remote Hangup Error: ${error}`)
+    }
+}
+```
+
+## Installation Steps
+
+1. **Install Dependencies**
+
+Make sure you have installed the necessary packages as mentioned in the Prerequisites section:
+
+```bash
+npm install react-native-webrtc react-navigation react-navigation-stack socket.io-client react-native-permissions
+```
+
+2. **Set Up WebRTC**
+
+To use `react-native-webrtc`, you need to ensure that your app has the correct configuration and permissions for camera and microphone. Follow the setup instructions for `react-native-webrtc`:
+
+- [Setting Up WebRTC on iOS](https://github.com/react-native-webrtc/react-native-webrtc/blob/master/docs/installation.md#ios)
+- [Setting Up WebRTC on Android](https://github.com/react-native-webrtc/react-native-webrtc/blob/master/docs/installation.md#android)
+
+3. **Socket Configuration**
+
+Ensure that your backend supports WebSocket communication using `socket.io`. You'll need to handle signaling (offers, answers, candidates) on your server.
+
+4. **Testing**
+
+To test the video call functionality, ensure that both devices have the app installed and connected to the same signaling server. You can test the call functionality using two devices or simulators.
+
+## Troubleshooting
+
+- **Permissions Issues**: Ensure that the app has the necessary permissions for camera and microphone on both Android and iOS.
+- **Connection Issues**: Check your WebSocket connection. Make sure the signaling server is running and both clients are connected.
+
+### Android (AndroidManifest.xml)
+
+Ensure you have the necessary permissions in `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+```
+
+### iOS (Info.plist)
+
+Add the following to `Info.plist`:
+
+```xml
+<key>NSCameraUsageDescription</key>
+<string>Your app needs camera access for video calls.</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>Your app needs microphone access for video calls.</string>
+```
+
+## Conclusion
+
+The `VideoCallScreen` component provides a complete solution for making video calls using WebRTC in a React Native application. With the included features like call initiation, acceptance, video streaming, and audio control, you can integrate real-time video calling into your app.
+
+For further customization, feel free to modify the component based on your application's needs.

@@ -4,7 +4,7 @@ import useVideoCallPermissions from '../hooks/useVideoCallPermissions'
 import { mediaDevices, RTCView } from 'react-native-webrtc';
 import { videoResolutions } from '../utils/helper';
 import socketServices from '../api/socketServices';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { usePeerConnection } from '../hooks/usePeerConnection';
 import DraggableView from '../components/DraggableView';
 
@@ -14,6 +14,7 @@ const VideoCallScreen = () => {
 
     const route = useRoute();
     const navigation = useNavigation();
+    const isFocus = useIsFocused();
     const { localUserId, remoteUserId } = route?.params;
     const [callConnected, setCallConnected] = useState(false);
     const [isBigScaleLocalView, setIsBigScaleLocalView] = useState(false);
@@ -64,9 +65,10 @@ const VideoCallScreen = () => {
             socketServices.removeListener('answer');
             socketServices.removeListener('candidate');
             socketServices.removeListener('hangup');
-            cleanUpStream();
         }
     }, [])
+
+    useEffect(() => { !isFocus && cleanUpStream() }, [isFocus])
 
     const onStartCall = async () => {
         try {
@@ -168,18 +170,15 @@ const VideoCallScreen = () => {
     }
 
     const cleanUpStream = async () => {
-        if (localStream) {
-            localStream.getTracks().forEach((track) => track.stop());
-            setLocalStream(null);
-        }
-        if (remoteStream) {
-            remoteStream.getTracks().forEach((track) => track.stop());
-            setRemoteStream(null);
-        }
+        stopMediaStream(localStream);
+        stopMediaStream(remoteStream);
+        setLocalStream(null);
+        setRemoteStream(null);
     }
 
+    const stopMediaStream = (stream) => { stream && stream.getTracks().forEach((track) => { track.stop() }) };
+
     const onHangUpPress = () => {
-        cleanUpStream();
         socketServices.emit('hangup', { from: localUserId, to: remoteUserId });
         navigation.canGoBack() && navigation.goBack();
     };

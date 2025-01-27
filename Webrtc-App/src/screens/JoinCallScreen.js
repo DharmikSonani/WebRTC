@@ -10,7 +10,7 @@ const JoinCallScreen = () => {
     const [currentUserId, setCurrentUserId] = useState('');
     const [remoteUserId, setRemoteUserId] = useState('');
 
-    const isJoinEnabled = currentUserId && remoteUserId;
+    const isJoinEnabled = currentUserId && remoteUserId && currentUserId != remoteUserId;
 
     const onJoinPress = () => {
         navigation.navigate(Screens.VideoCallScreen, {

@@ -7,6 +7,7 @@ import socketServices from '../api/socketServices';
 import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { usePeerConnection } from '../hooks/usePeerConnection';
 import DraggableView from '../components/DraggableView';
+import InCallManager from 'react-native-incall-manager';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -76,6 +77,10 @@ const VideoCallScreen = () => {
                 const permission = checkAndRequestPermissions();
                 if (!permission) return;
             };
+
+            InCallManager.setSpeakerphoneOn(true);
+            InCallManager.start({ media: 'video' });
+
             const stream = await mediaDevices.getUserMedia({
                 audio: true,
                 video: videoResolutions.QHD_1440p,
@@ -112,6 +117,9 @@ const VideoCallScreen = () => {
                 onPress: async () => {
                     try {
                         await peerConnection.current.setRemoteDescription(data.offer);
+
+                        InCallManager.setSpeakerphoneOn(true);
+                        InCallManager.start({ media: 'video' });
 
                         const stream = await mediaDevices.getUserMedia({
                             audio: true,
@@ -174,6 +182,7 @@ const VideoCallScreen = () => {
         stopMediaStream(remoteStream);
         setLocalStream(null);
         setRemoteStream(null);
+        InCallManager.stop();
     }
 
     const stopMediaStream = (stream) => { stream && stream.getTracks().forEach((track) => { track.stop() }) };

@@ -1,13 +1,10 @@
 import { Alert, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import useVideoCallPermissions from '../hooks/useVideoCallPermissions'
-import { mediaDevices, RTCView } from 'react-native-webrtc';
-import { videoResolutions } from '../utils/helper';
+import React, { useEffect } from 'react'
+import { RTCView } from 'react-native-webrtc';
 import socketServices from '../api/socketServices';
-import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
-import { usePeerConnection } from '../hooks/usePeerConnection';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import DraggableView from '../components/DraggableView';
-import InCallManager from 'react-native-incall-manager';
+import { useWebrtcForVC } from '../hooks/useWebrtcForVC';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -15,43 +12,54 @@ const VideoCallScreen = () => {
 
     const route = useRoute();
     const navigation = useNavigation();
-    const isFocus = useIsFocused();
+
     const { localUserId, remoteUserId } = route?.params;
-    const [callConnected, setCallConnected] = useState(false);
-    const [isBigScaleLocalView, setIsBigScaleLocalView] = useState(false);
-    const [toggleMic, setToggleMic] = useState(true);
-    const [toggleSpeaker, setToggleSpeaker] = useState(true);
 
-    // Custom Hooks
-    const { permissionsGranted, checkAndRequestPermissions } = useVideoCallPermissions();
-    const { peerConnection } = usePeerConnection({});
-
-    // Local User
-    const [localStream, setLocalStream] = useState(null);
-
-    // Remote User
-    const [remoteStream, setRemoteStream] = useState(null);
-
-    // Peer Connection (For Remote Stream)
-    useEffect(() => {
-        const pc = peerConnection.current;
-
-        pc && (pc.ontrack = (event) => {
-            if (event.streams && event.streams[0]) {
-                setRemoteStream(event.streams[0]);
-            }
+    const onCreateOffer = (offer) => {
+        socketServices.emit('offer', {
+            from: localUserId,
+            to: remoteUserId,
+            offer: offer,
         });
+    }
 
-        pc && (pc.onicecandidate = (event) => {
-            if (event.candidate) {
-                socketServices.emit('candidate', {
-                    from: localUserId,
-                    to: remoteUserId,
-                    candidate: event.candidate,
-                });
-            }
+    const onAnswerOffer = (answer) => {
+        socketServices.emit('answer', {
+            from: localUserId,
+            to: remoteUserId,
+            answer: answer,
         });
-    }, [])
+    }
+
+    const onIceCandidate = (candidate) => {
+        socketServices.emit('candidate', {
+            from: localUserId,
+            to: remoteUserId,
+            candidate: candidate,
+        });
+    }
+
+    const {
+        localStream,
+        remoteStream,
+        callConnected,
+        isBigScaleLocalView,
+        micEnable,
+        speakerEnable,
+
+        onStartCall,
+        onCallAccept,
+        onViewScaleChange,
+        onToggleMic,
+        onToggleSpeaker,
+
+        handleAnswer,
+        handleCandidate,
+    } = useWebrtcForVC({
+        onIceCandidate,
+        onCreateOffer,
+        onAnswerOffer,
+    });
 
     // Socket
     useEffect(() => {
@@ -59,7 +67,7 @@ const VideoCallScreen = () => {
 
         socketServices.on('offer', handleIncomingCall);
         socketServices.on('answer', handleAnswer);
-        socketServices.on('candidate', handleCandidate);
+        socketServices.on('candidate', (data) => { handleCandidate(remoteUserId, data) });
         socketServices.on('hangup', handleRemoteHangup);
 
         return () => {
@@ -71,42 +79,10 @@ const VideoCallScreen = () => {
         }
     }, [])
 
-    useEffect(() => { !isFocus && cleanUpStream() }, [isFocus])
-
-    const onStartCall = async () => {
-        try {
-            if (!permissionsGranted) {
-                const permission = checkAndRequestPermissions();
-                if (!permission) return;
-            };
-
-            InCallManager.setKeepScreenOn(true);
-            InCallManager.setSpeakerphoneOn(true);
-            InCallManager.start({ media: 'video' });
-
-            const stream = await mediaDevices.getUserMedia({
-                audio: true,
-                video: videoResolutions.QHD_1440p,
-            });
-            setLocalStream(stream);
-            peerConnection.current && stream.getTracks().length > 0 && stream.getTracks().forEach((track) => peerConnection.current.addTrack(track, stream));
-            createOffer();
-        } catch (error) {
-            console.log('Local Stream error:', error);
-        }
-    }
-
-    const createOffer = async () => {
-        const offer = await peerConnection.current.createOffer();
-
-        await peerConnection.current.setLocalDescription(offer);
-
-        socketServices.emit('offer', {
-            from: localUserId,
-            to: remoteUserId,
-            offer,
-        });
-    }
+    const onHangUpPress = () => {
+        socketServices.emit('hangup', { from: localUserId, to: remoteUserId });
+        navigation.canGoBack() && navigation.goBack();
+    };
 
     const handleIncomingCall = (data) => {
         Alert.alert('Incoming Call', 'Accept the call?', [
@@ -117,59 +93,9 @@ const VideoCallScreen = () => {
             },
             {
                 text: 'Accept',
-                onPress: async () => {
-                    try {
-                        await peerConnection.current.setRemoteDescription(data.offer);
-
-                        InCallManager.setSpeakerphoneOn(true);
-                        InCallManager.setKeepScreenOn(true);
-                        InCallManager.start({ media: 'video' });
-
-                        const stream = await mediaDevices.getUserMedia({
-                            audio: true,
-                            video: videoResolutions.QHD_1440p,
-                        });
-
-                        setLocalStream(stream);
-
-                        stream.getTracks().forEach((track) => {
-                            peerConnection.current.addTrack(track, stream);
-                        });
-
-                        const answer = await peerConnection.current.createAnswer();
-
-                        await peerConnection.current.setLocalDescription(answer);
-
-                        socketServices.emit('answer', {
-                            from: localUserId,
-                            to: data.from,
-                            answer,
-                        });
-
-                        setCallConnected(true);
-                    } catch (error) {
-                        console.log(`Handle Incoming Call Error: ${error}`);
-                    }
-                },
+                onPress: () => { onCallAccept(data) },
             },
         ]);
-    }
-
-    const handleAnswer = async (data) => {
-        try {
-            await peerConnection.current.setRemoteDescription(data.answer);
-            setCallConnected(true);
-        } catch (error) {
-            console.log(`Handle Answer Error: ${error}`)
-        }
-    }
-
-    const handleCandidate = (data) => {
-        try {
-            data?.from == remoteUserId && data?.candidate && peerConnection.current.addIceCandidate(data.candidate);
-        } catch (error) {
-            console.log(`Handle Candidate Error: ${error}`)
-        }
     }
 
     const handleRemoteHangup = () => {
@@ -178,42 +104,6 @@ const VideoCallScreen = () => {
             navigation.canGoBack() && navigation.goBack();
         } catch (error) {
             console.log(`Handle Remote Hangup Error: ${error}`)
-        }
-    }
-
-    const cleanUpStream = async () => {
-        stopMediaStream(localStream);
-        stopMediaStream(remoteStream);
-        setLocalStream(null);
-        setRemoteStream(null);
-        InCallManager.stop();
-    }
-
-    const stopMediaStream = (stream) => { stream && stream.getTracks().forEach((track) => { track.stop() }) };
-
-    const onHangUpPress = () => {
-        socketServices.emit('hangup', { from: localUserId, to: remoteUserId });
-        navigation.canGoBack() && navigation.goBack();
-    };
-
-    const onBigScale = () => {
-        setIsBigScaleLocalView(pre => !pre);
-    }
-
-    const onToggleMic = () => {
-        setToggleMic(pre => !pre);
-        toggleAudio(localStream);
-    }
-
-    const onToggleSpeaker = () => {
-        setToggleSpeaker(pre => !pre);
-        toggleAudio(remoteStream);
-    }
-
-    const toggleAudio = (stream) => {
-        if (stream) {
-            const audioTrack = stream.getAudioTracks()[0];
-            audioTrack && (audioTrack.enabled = !audioTrack.enabled)
         }
     }
 
@@ -241,7 +131,7 @@ const VideoCallScreen = () => {
                                 <TouchableOpacity
                                     style={styles.LocalVideo}
                                     activeOpacity={1}
-                                    onPress={onBigScale}
+                                    onPress={onViewScaleChange}
                                 >
                                     <RTCView
                                         streamURL={isBigScaleLocalView ? remoteStream.toURL() : localStream.toURL()}
@@ -269,14 +159,14 @@ const VideoCallScreen = () => {
                 {
                     (remoteStream || localStream) ?
                         <>
-                            <TouchableOpacity style={[styles.Button, !toggleSpeaker && styles.HangUpButton]} onPress={onToggleSpeaker} activeOpacity={1}>
-                                <Text style={styles.ButtonText}>{toggleSpeaker ? 'SE' : 'SD'}</Text>
+                            <TouchableOpacity style={[styles.Button, !speakerEnable && styles.HangUpButton]} onPress={onToggleSpeaker} activeOpacity={1}>
+                                <Text style={styles.ButtonText}>{speakerEnable ? 'SE' : 'SD'}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={[styles.Button, styles.HangUpButton]} onPress={onHangUpPress}>
                                 <Text style={styles.ButtonText}>Hang Up</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={[styles.Button, !toggleMic && styles.HangUpButton]} onPress={onToggleMic} activeOpacity={1}>
-                                <Text style={styles.ButtonText}>{toggleMic ? 'ME' : 'MD'}</Text>
+                            <TouchableOpacity style={[styles.Button, !micEnable && styles.HangUpButton]} onPress={onToggleMic} activeOpacity={1}>
+                                <Text style={styles.ButtonText}>{micEnable ? 'ME' : 'MD'}</Text>
                             </TouchableOpacity>
                         </>
                         :

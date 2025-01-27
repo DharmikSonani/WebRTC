@@ -1,9 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { RTCPeerConnection } from 'react-native-webrtc';
 
-export const usePeerConnection = ({
-
-}) => {
+export const usePeerConnection = () => {
     const peerConnection = useRef(null);
 
     useEffect(() => {

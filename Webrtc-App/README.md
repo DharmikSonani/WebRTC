@@ -37,7 +37,7 @@ Make sure to follow any additional setup steps for `react-native-webrtc` as ment
    First, import the `usePeerConnection` hook into your component.
 
    ```javascript
-   import { usePeerConnection } from './path/to/usePeerConnection';
+   import { usePeerConnection } from './usePeerConnection';
    ```
 
 2. **Use the Hook:**
@@ -46,7 +46,7 @@ Make sure to follow any additional setup steps for `react-native-webrtc` as ment
 
    ```javascript
    import React, { useEffect } from 'react';
-   import { usePeerConnection } from './path/to/usePeerConnection';
+   import { usePeerConnection } from './usePeerConnection';
 
    const VideoCallComponent = () => {
      const { peerConnection, setupPeerConnection, closePeerConnection } = usePeerConnection();
@@ -134,3 +134,138 @@ export default VideoCallComponent;
 - This hook does not handle media (audio/video) tracks, it only manages the peer connection itself. You will need to add media stream handling (e.g., using `getUserMedia`) to your WebRTC implementation.
 - This setup uses Google's public STUN servers, but for production use, you may want to include your own TURN servers for NAT traversal.
 
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+# 2. `useVideoCallPermissions` Hook for React Native
+
+This `useVideoCallPermissions` hook simplifies the process of checking and requesting permissions for camera and microphone access on both Android and iOS devices. It is especially useful for video call functionality where both the camera and microphone need to be accessed.
+
+## Features
+
+- **Permission Checking:** Automatically checks if the app has camera and microphone permissions.
+- **Permission Requesting:** Requests the necessary permissions if not already granted.
+- **Platform-Specific Handling:** Supports both Android and iOS platforms with respective permission handling logic.
+
+## Prerequisites
+
+Make sure to install the required dependencies for permissions handling:
+
+- **react-native-permissions:** A library to manage permissions in React Native.
+
+To install the necessary dependencies, run the following command:
+
+```bash
+npm install react-native-permissions
+```
+
+or
+
+```bash
+yarn add react-native-permissions
+```
+
+Follow the [installation instructions](https://github.com/zoontek/react-native-permissions#installation) from the `react-native-permissions` repository for additional platform-specific setup.
+
+Additionally, on Android, ensure you have the following permissions in your `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+```
+
+## Usage
+
+1. **Import the Hook:**
+
+   First, import the `useVideoCallPermissions` hook into your component.
+
+   ```javascript
+   import { useVideoCallPermissions } from './useVideoCallPermissions';
+   ```
+
+2. **Use the Hook:**
+
+   Inside your functional component, call `useVideoCallPermissions` to handle permission checking and requesting.
+
+   ```javascript
+   import React, { useEffect } from 'react';
+   import { Text, View } from 'react-native';
+   import { useVideoCallPermissions } from './useVideoCallPermissions';
+
+   const VideoCallComponent = () => {
+     const { permissionsGranted, checkAndRequestPermissions } = useVideoCallPermissions();
+
+     useEffect(() => {
+       checkAndRequestPermissions();
+     }, []);
+
+     return (
+       <View>
+         <Text>{permissionsGranted ? 'Permissions Granted' : 'Permissions Denied'}</Text>
+         {/* Your video call UI components here */}
+       </View>
+     );
+   };
+
+   export default VideoCallComponent;
+   ```
+
+3. **Permissions Flow:**
+
+   - On **Android**, the hook requests both `CAMERA` and `RECORD_AUDIO` permissions at once.
+   - On **iOS**, the hook checks if the permissions are granted for both the camera and microphone, and requests them if necessary.
+
+4. **Permission Status:**
+
+   The hook returns the following:
+
+   - `permissionsGranted`: A boolean indicating whether both camera and microphone permissions are granted.
+   - `checkAndRequestPermissions`: A function that manually checks and requests the necessary permissions.
+
+## API Reference
+
+### `useVideoCallPermissions`
+
+This hook returns an object with the following properties:
+
+- `permissionsGranted`: A boolean indicating whether the camera and microphone permissions have been granted.
+- `checkAndRequestPermissions`: A function to manually check and request permissions. This is automatically called in the `useEffect`, but you can call it again if needed.
+
+### `checkAndRequestPermissions`
+
+This function checks the current permission status and requests the necessary permissions if they are not granted. It returns `true` if both camera and microphone permissions are granted, otherwise `false`.
+
+```javascript
+checkAndRequestPermissions();
+```
+
+## Example
+
+```javascript
+import React, { useEffect } from 'react';
+import { Text, View } from 'react-native';
+import { useVideoCallPermissions } from './useVideoCallPermissions';
+
+const VideoCallComponent = () => {
+  const { permissionsGranted, checkAndRequestPermissions } = useVideoCallPermissions();
+
+  useEffect(() => {
+    checkAndRequestPermissions();
+  }, []);
+
+  return (
+    <View>
+      <Text>{permissionsGranted ? 'Permissions Granted' : 'Permissions Denied'}</Text>
+      {/* Your video call UI goes here */}
+    </View>
+  );
+};
+
+export default VideoCallComponent;
+```
+
+## Notes
+
+- This hook handles permissions for **camera** and **microphone** only. If your app requires additional permissions (e.g., for storage or location), you will need to handle those separately.
+- On Android, the app will request permissions for both `CAMERA` and `RECORD_AUDIO` at the same time.
+- On iOS, the hook will automatically request camera and microphone permissions if they are not granted.

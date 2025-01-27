@@ -1,79 +1,136 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+#  Frontend For Webrtc(React Native)
 
-# Getting Started
+# 1. `usePeerConnection` Hook for React Native WebRTC
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+This `usePeerConnection` hook provides a simple interface for managing WebRTC Peer Connections in React Native. It utilizes the `RTCPeerConnection` from the `react-native-webrtc` library to establish a connection for WebRTC-based communication, handling the setup and teardown of the connection when needed.
 
-## Step 1: Start the Metro Server
+## Features
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+- **Automatic Peer Connection Setup:** Automatically sets up a `RTCPeerConnection` with common STUN servers.
+- **Automatic Cleanup:** Cleans up the connection when the component using the hook is unmounted.
+- **Customizable Ice Servers:** Allows you to configure your own STUN/TURN servers.
 
-To start Metro, run the following command from the _root_ of your React Native project:
+## Prerequisites
 
-```bash
-# using npm
-npm start
+Ensure you have the following dependencies in your React Native project:
 
-# OR using Yarn
-yarn start
-```
+- **react-native-webrtc**: This library provides WebRTC functionality for React Native apps.
 
-## Step 2: Start your Application
-
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
-
-### For Android
+To install the necessary dependencies, run the following command:
 
 ```bash
-# using npm
-npm run android
-
-# OR using Yarn
-yarn android
+npm install react-native-webrtc
 ```
 
-### For iOS
+or
 
 ```bash
-# using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
+yarn add react-native-webrtc
 ```
 
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
+Make sure to follow any additional setup steps for `react-native-webrtc` as mentioned in their [documentation](https://github.com/react-native-webrtc/react-native-webrtc).
 
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
+## Usage
 
-## Step 3: Modifying your App
+1. **Import the Hook:**
 
-Now that you have successfully run the app, let's modify it.
+   First, import the `usePeerConnection` hook into your component.
 
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
+   ```javascript
+   import { usePeerConnection } from './path/to/usePeerConnection';
+   ```
 
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
+2. **Use the Hook:**
 
-## Congratulations! :tada:
+   Inside your functional component, call `usePeerConnection` to get access to the peer connection, and its setup and close methods.
 
-You've successfully run and modified your React Native App. :partying_face:
+   ```javascript
+   import React, { useEffect } from 'react';
+   import { usePeerConnection } from './path/to/usePeerConnection';
 
-### Now what?
+   const VideoCallComponent = () => {
+     const { peerConnection, setupPeerConnection, closePeerConnection } = usePeerConnection();
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
+     useEffect(() => {
+       // Setup the connection when the component mounts
+       setupPeerConnection();
 
-# Troubleshooting
+       // Close the connection when the component unmounts
+       return () => closePeerConnection();
+     }, []);
 
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+     return (
+       <View>
+         <Text>Video Call</Text>
+         {/* Your video call UI components here */}
+       </View>
+     );
+   };
 
-# Learn More
+   export default VideoCallComponent;
+   ```
 
-To learn more about React Native, take a look at the following resources:
+3. **Customization:**
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+   You can modify the `iceServers` array inside the `setupPeerConnection` function if you'd like to use custom STUN or TURN servers for the connection. Currently, it uses Google’s public STUN servers by default.
+
+## API Reference
+
+### `usePeerConnection`
+
+This hook returns an object with the following properties:
+
+- `peerConnection`: A reference to the `RTCPeerConnection` instance, which can be used for further WebRTC operations.
+- `setupPeerConnection`: A function to manually set up the peer connection (though it's automatically called in the `useEffect`).
+- `closePeerConnection`: A function to manually close the peer connection, which is also automatically called when the component unmounts.
+
+### `setupPeerConnection`
+
+Sets up the `RTCPeerConnection` with default STUN servers. It returns the peer connection instance.
+
+```javascript
+setupPeerConnection();
+```
+
+### `closePeerConnection`
+
+Closes the peer connection and cleans up the resources.
+
+```javascript
+closePeerConnection();
+```
+
+## Example
+
+```javascript
+import React, { useEffect } from 'react';
+import { Text, View } from 'react-native';
+import { usePeerConnection } from './usePeerConnection';
+
+const VideoCallComponent = () => {
+  const { setupPeerConnection, closePeerConnection } = usePeerConnection();
+
+  useEffect(() => {
+    setupPeerConnection();
+
+    return () => {
+      closePeerConnection();
+    };
+  }, []);
+
+  return (
+    <View>
+      <Text>Video Call is Ongoing</Text>
+      {/* Video Call UI goes here */}
+    </View>
+  );
+};
+
+export default VideoCallComponent;
+```
+
+## Notes
+
+- This hook does not handle media (audio/video) tracks, it only manages the peer connection itself. You will need to add media stream handling (e.g., using `getUserMedia`) to your WebRTC implementation.
+- This setup uses Google's public STUN servers, but for production use, you may want to include your own TURN servers for NAT traversal.
+

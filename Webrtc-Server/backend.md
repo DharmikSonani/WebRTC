@@ -1,4 +1,3 @@
-
 # WebSocket Real-Time Communication Backend
 
 This repository provides the backend implementation of a real-time communication server using WebSockets with the help of `Socket.io`. It supports user connections, joining/leaving rooms, and broadcasting WebRTC signaling events (offers, answers, ICE candidates, and hangups) for peer-to-peer communications.

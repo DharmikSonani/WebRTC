@@ -36,6 +36,7 @@ function initializeSocket(server) {
       io.to(data.to).emit('answer', { answer: data.answer, from: data.from });
     });
 
+    // Hangup Call
     socket.on('hangup', (data) => {
       console.log(`Hang Up : ${JSON.stringify(data)}`)
       io.to(data.to).emit('hangup', { from: data.from });

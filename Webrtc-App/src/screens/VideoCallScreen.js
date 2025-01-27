@@ -1,4 +1,4 @@
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import useVideoCallPermissions from '../hooks/useVideoCallPermissions'
 import { mediaDevices, RTCView } from 'react-native-webrtc';
@@ -6,12 +6,17 @@ import { videoResolutions } from '../utils/helper';
 import socketServices from '../api/socketServices';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { usePeerConnection } from '../hooks/usePeerConnection';
+import DraggableView from '../components/DraggableView';
+
+const { width, height } = Dimensions.get('screen');
 
 const VideoCallScreen = () => {
 
     const route = useRoute();
     const navigation = useNavigation();
     const { localUserId, remoteUserId } = route?.params;
+    const [callConnected, setCallConnected] = useState(false);
+    const [isBigScaleLocalView, setIsBigScaleLocalView] = useState(false);
 
     // Custom Hooks
     const { permissionsGranted, checkAndRequestPermissions } = useVideoCallPermissions();
@@ -126,6 +131,8 @@ const VideoCallScreen = () => {
                             to: data.from,
                             answer,
                         });
+
+                        setCallConnected(true);
                     } catch (error) {
                         console.log(`Handle Incoming Call Error: ${error}`);
                     }
@@ -137,6 +144,7 @@ const VideoCallScreen = () => {
     const handleAnswer = async (data) => {
         try {
             await peerConnection.current.setRemoteDescription(data.answer);
+            setCallConnected(true);
         } catch (error) {
             console.log(`Handle Answer Error: ${error}`)
         }
@@ -176,24 +184,49 @@ const VideoCallScreen = () => {
         navigation.canGoBack() && navigation.goBack();
     };
 
+    const onBigScale = () => {
+        setIsBigScaleLocalView(pre => !pre);
+    }
+
     return (
         <View style={styles.Container}>
             {
-                remoteStream && (
+                (callConnected && localStream && remoteStream) ?
+                    <>
+                        <View style={styles.RemoteVideo}>
+                            <RTCView
+                                streamURL={isBigScaleLocalView ? localStream.toURL() : remoteStream.toURL()}
+                                style={styles.RTCViewStyle}
+                                objectFit="cover"
+                                mirror={true}
+                            />
+                        </View>
+                        <View style={styles.LocalViewContainer}>
+                            <DraggableView
+                                x={width}
+                                y={height - 140}
+                                border={25}
+                                bounceHorizontal
+                                bounceVertical
+                            >
+                                <TouchableOpacity
+                                    style={styles.LocalVideo}
+                                    activeOpacity={1}
+                                    onPress={onBigScale}
+                                >
+                                    <RTCView
+                                        streamURL={isBigScaleLocalView ? remoteStream.toURL() : localStream.toURL()}
+                                        style={styles.RTCViewStyle}
+                                        objectFit="cover"
+                                        mirror={true}
+                                    />
+                                </TouchableOpacity>
+                            </DraggableView>
+                        </View>
+                    </>
+                    :
+                    localStream &&
                     <View style={styles.RemoteVideo}>
-                        <RTCView
-                            streamURL={remoteStream.toURL()}
-                            style={styles.RTCViewStyle}
-                            objectFit="cover"
-                            mirror={true}
-                        />
-                    </View>
-                )
-            }
-
-            {
-                localStream && (
-                    <View style={styles.LocalVideo}>
                         <RTCView
                             streamURL={localStream.toURL()}
                             style={styles.RTCViewStyle}
@@ -201,7 +234,6 @@ const VideoCallScreen = () => {
                             mirror={true}
                         />
                     </View>
-                )
             }
 
             {
@@ -235,15 +267,20 @@ const styles = StyleSheet.create({
         position: 'absolute',
         zIndex: 1,
     },
+    LocalViewContainer: {
+        width: width,
+        marginTop: 45,
+        position: 'absolute',
+        zIndex: 10,
+        padding: 25,
+        height: height - 140,
+    },
     LocalVideo: {
         width: 100,
         aspectRatio: 1 / 1.5,
-        position: 'absolute',
-        top: 60,
-        right: 25,
         borderRadius: 20,
         overflow: 'hidden',
-        zIndex: 2,
+        zIndex: 100,
     },
     Button: {
         backgroundColor: '#4CAF50',

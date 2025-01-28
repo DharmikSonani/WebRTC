@@ -5,6 +5,7 @@ import socketServices from '../api/socketServices';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import DraggableView from '../components/DraggableView';
 import { useWebrtcForVC } from '../hooks/useWebrtcForVC';
+import InCallManager from 'react-native-incall-manager';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -80,11 +81,13 @@ const VideoCallScreen = () => {
     }, [])
 
     const onHangUpPress = () => {
+        InCallManager.stopRingtone();
         socketServices.emit('hangup', { from: localUserId, to: remoteUserId });
         navigation.canGoBack() && navigation.goBack();
     };
 
     const handleIncomingCall = (data) => {
+        InCallManager.startRingtone();
         Alert.alert('Incoming Call', 'Accept the call?', [
             {
                 text: 'Reject',
@@ -93,7 +96,7 @@ const VideoCallScreen = () => {
             },
             {
                 text: 'Accept',
-                onPress: () => { onCallAccept(data) },
+                onPress: () => { onCallAccept(data), InCallManager.stopRingtone(); },
             },
         ]);
     }

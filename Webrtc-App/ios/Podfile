@@ -29,7 +29,7 @@ setup_permissions([
   # 'MediaLibrary',
   'Microphone',
   # 'Motion',
-  # 'Notifications',
+  'Notifications',
   # 'PhotoLibrary',
   # 'PhotoLibraryAddOnly',
   # 'Reminders',
@@ -46,7 +46,8 @@ end
 
 target 'WebrtcApp' do
   config = use_native_modules!
-
+  use_frameworks! :linkage => :static
+  $RNFirebaseAsStaticFramework = true
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.

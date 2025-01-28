@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "webrtc-video-call-notification",
+  "private_key_id": "35e2c139660736bef08d44b053ee9d16ef7e24b1",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDKtyFkSHtVxFHe\n+T60WoWm9q+31yShDtxI1ZNcNM0GOO+uXGTJJAdBClsiZN/Y/wj7CGAJKGw+luQs\nGZju8PR3zKvuqoQSOH1ePnzVp3wtsqL8xUmaurLdVdLFpbihHSCHlysnl1YCktWq\nOQ+UCTdF00AUNLmyVTp6wRZ7XvWM7sn7tX2k/kZStGc3t436/DX0pGAF9NYgW1h8\nFFp0wR7xaciQpqh/UbWonNpgEHmzRPCzX9PHHO5YgQ4XgTgDmGtnoozDVnOZnD28\nD9G1/MmehoEghbj4s+Eh9Yi/w/Vw3eq0P1klQWi4QOartkXn/mliKJ/hHqqtCDol\np+vy0fuxAgMBAAECggEABHavTjXa5rcZIqxtyBoRXobeLC9U+OEKwX9GsNtXLj5t\no1DUtKEe3JIJZ/PORkkP4BhB6m1wxLs/LEnzeEO0IH2Ukogd3OYuEMjJUudOrEjK\njbLXvYfMfHUK7Vd5Oa2i6RDgiOsKKN0lxfGi6C2Ro3gZE+njsr7CwJ7Pi4T2B7w7\neu0wndhaBrSTXCuWtft0FanslIWDeLpaeFzaLrm6VUEN5djaJoVZDXeYSKnL+i57\nW0zT/gXJhHVmk+6JNGEqbwBv/tc3d+nNStH6EKZ4Mnr8v0nJQO50zhb16UY6di0L\ncxdXPJDHpBaYg+twTVaSgXjaQphi5FCj/DFT9zBYKQKBgQDmzCtjNuVnr9rXtmFJ\nB3TJjdRw+XP+dh1vR3Boxb3sFDFqr1Nlbm3J2aWPKVoL+7iUqrTbC/vpgB49rjnv\nwY0OghPj6Y3RlrK+PL9imLpDhi6yeKRJNAdTHkCzgqCiBKMqJtTDtbXt0NvPM4hC\nVHUZC4WoJzHdxOMM7ZKPcsvhGwKBgQDg2e/8/L6DXBEiYNu1AJSD+ZpvGZEkC8uq\na8Etb5cUrIImZSd02WTcMdERH2ZX0V4Ci3AhHzKy18YRn6Yqw/QoGK7jQrUuqqAZ\ny7/fl8itVUDJo8PSNFJpTWF6fJM6tEtOEeBv/Ed8yLjJ0Zj1aX3AWkxljVGDPoP5\nJvZGw/7vIwKBgQDVq/wXNIGaRwKyZtUWiWKkHzypAylSUgPaPCdjuH6mi+NcQ8lP\nxLa8A1X1fnExWvB+IrShfyzP9p8It75Hq8dtwRutC1MS0RPWb+M34vG/BgFBldNz\nOkn1t7Jq/uq8VNLCeYTNU/OEorJ919W0owBuGW66SN8v09Ho7CGd0MfUNQKBgQCP\n0faWLBezr+zpv2howwE71Si5zXGvy7euvxOl+014lMr+wg7Vx8OisF6YhCwTGcD3\nAbdsCCeGi0uOtD419nayOu+KP33iZpLXTSLiYpSigfhZwV0clAjuf+dM0Gff0bil\nK/wRxRz4rO69cEpVFu+vXFKnVhgASbliYVB/fRgQXwKBgQDR2aheI5+qU7ST3mPZ\nPJ9rRhUOb7KZO8ax7lM2pNQRgUqJK0RNmJCGxeF0qM7WUjld6JhU6F+Q6qZC3C4A\nyYuKrnl+PlhNM6f5lfsfuOefsfwcB4RNOM5bttYIW2TQtHDFKFRJasDBp72qFStP\nDLao4GPMcPYGnew10mspujx1NA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@webrtc-video-call-notification.iam.gserviceaccount.com",
+  "client_id": "109107033363057858608",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40webrtc-video-call-notification.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

@@ -1,4 +1,4 @@
-import { Alert, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect } from 'react'
 import { RTCView } from 'react-native-webrtc';
 import socketServices from '../api/socketServices';
@@ -6,6 +6,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import DraggableView from '../components/DraggableView';
 import { useWebrtcForVC } from '../hooks/useWebrtcForVC';
 import InCallManager from 'react-native-incall-manager';
+import { useFCM } from '../hooks/useFCM';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -15,6 +16,7 @@ const VideoCallScreen = () => {
     const navigation = useNavigation();
 
     const { localUserId, remoteUserId } = route?.params;
+    const offer = route?.params?.offer;
 
     const onCreateOffer = (offer) => {
         socketServices.emit('offer', {
@@ -62,23 +64,35 @@ const VideoCallScreen = () => {
         onAnswerOffer,
     });
 
+    const { fcmToken } = useFCM();
+
     // Socket
     useEffect(() => {
-        socketServices.emit('JoinSocket', localUserId);
+        if (fcmToken || Platform.OS == 'ios') {
+            socketServices.emit('JoinSocket', {
+                userId: localUserId,
+                fcmToken: fcmToken ?? '',
+            });
 
-        socketServices.on('offer', handleIncomingCall);
-        socketServices.on('answer', handleAnswer);
-        socketServices.on('candidate', (data) => { handleCandidate(remoteUserId, data) });
-        socketServices.on('hangup', handleRemoteHangup);
+            socketServices.on('offer', handleIncomingCall);
+            socketServices.on('answer', handleAnswer);
+            socketServices.on('candidate', (data) => { handleCandidate(remoteUserId, data) });
+            socketServices.on('hangup', handleRemoteHangup);
 
-        return () => {
-            socketServices.emit('LeaveSocket', localUserId);
-            socketServices.removeListener('offer');
-            socketServices.removeListener('answer');
-            socketServices.removeListener('candidate');
-            socketServices.removeListener('hangup');
+            if (offer) {
+                onCallAccept({ offer });
+                InCallManager.stopRingtone();
+            }
+
+            return () => {
+                socketServices.emit('LeaveSocket', localUserId);
+                socketServices.removeListener('offer');
+                socketServices.removeListener('answer');
+                socketServices.removeListener('candidate');
+                socketServices.removeListener('hangup');
+            }
         }
-    }, [])
+    }, [fcmToken])
 
     const onHangUpPress = () => {
         InCallManager.stopRingtone();

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1070822382653",
+    "project_id": "webrtc-video-call-notification",
+    "storage_bucket": "webrtc-video-call-notification.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1070822382653:android:d912bbb8e9de88c5665e54",
+        "android_client_info": {
+          "package_name": "com.webrtcapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJcvxwB8eUNi9U42DNDW0dy2g2q20kD4I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

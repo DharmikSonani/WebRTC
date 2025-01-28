@@ -10,7 +10,8 @@ async function sendPushNotification(token, data = {}, title = 'WebRTC', body = '
     const message = {
         notification: {
             title: title,
-            body: body,
+            // body: body,
+            body: `Incoming Video Call From ${data.from}`,
         },
         token: token,
         data: { data: JSON.stringify(data) },

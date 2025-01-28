@@ -6,7 +6,9 @@ import socketServices from './api/socketServices';
 
 const App = () => {
 
-  useEffect(() => { socketServices.initializeSocket() }, [])
+  useEffect(() => {
+    socketServices.initializeSocket()
+  }, [])
 
   return (
     <>

@@ -4,9 +4,9 @@ import { RTCView } from 'react-native-webrtc';
 import socketServices from '../api/socketServices';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import DraggableView from '../components/DraggableView';
-import { useWebrtcForVC } from '../hooks/useWebrtcForVC';
 import InCallManager from 'react-native-incall-manager';
-import { useFCM } from '../hooks/useFCM';
+import { useFCM } from '../hooks/notification/useFCM';
+import { useWebrtcForVC } from '../hooks/video-call/useWebrtcForVC';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -74,7 +74,7 @@ const VideoCallScreen = () => {
                 fcmToken: fcmToken ?? '',
             });
 
-            socketServices.on('offer', handleIncomingCall);
+            // socketServices.on('offer', handleIncomingCall);
             socketServices.on('answer', handleAnswer);
             socketServices.on('candidate', (data) => { handleCandidate(remoteUserId, data) });
             socketServices.on('hangup', handleRemoteHangup);
@@ -86,7 +86,7 @@ const VideoCallScreen = () => {
 
             return () => {
                 socketServices.emit('LeaveSocket', localUserId);
-                socketServices.removeListener('offer');
+                // socketServices.removeListener('offer');
                 socketServices.removeListener('answer');
                 socketServices.removeListener('candidate');
                 socketServices.removeListener('hangup');

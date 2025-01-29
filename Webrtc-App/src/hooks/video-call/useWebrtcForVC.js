@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import useVideoCallPermissions from "./useVideoCallPermissions";
-import { usePeerConnection } from "./usePeerConnection";
 import InCallManager from 'react-native-incall-manager';
 import { mediaDevices } from "react-native-webrtc";
-import { videoResolutions } from "../utils/helper";
+import { videoResolutions } from "../../utils/helper";
 import { useIsFocused } from "@react-navigation/native";
+import { usePeerConnection } from "./usePeerConnection";
+import { useVideoCallPermissions } from "./useVideoCallPermissions";
 
 export const useWebrtcForVC = ({
     onCreateOffer = (offer) => { console.log(`onCreateOffer : ${offer}`); },

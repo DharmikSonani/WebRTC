@@ -1,9 +1,14 @@
-import messaging from '@react-native-firebase/messaging';
+import InCallManager from "react-native-incall-manager";
 import notifee, { AndroidImportance } from '@notifee/react-native';
-import InCallManager from 'react-native-incall-manager';
+import socketServices from "../../api/socketServices";
+import { Screens } from "../../routes/helper";
 
-export const useNotification = () => {
+export const useCallNotification = ({
+    navigationRef
+}) => {
+
     const displayCallNotification = async (remoteMessage) => {
+
         InCallManager.stopRingtone();
         InCallManager.startRingtone();
 
@@ -38,22 +43,34 @@ export const useNotification = () => {
         });
     };
 
-    messaging().setBackgroundMessageHandler(async (remoteMessage) => {
-        // console.log('Background message received:', remoteMessage);
-        // onNotificationReceive(remoteMessage);
-    });
-
-    messaging().onMessage(async (remoteMessage) => {
-        // console.log('Foreground message received:', remoteMessage);
-        onNotificationReceive(remoteMessage);
-    });
-
-    const onNotificationReceive = async (remoteMessage) => {
+    const handleCallAccept = (remoteMessage) => {
+        InCallManager.stopRingtone();
         const data = remoteMessage?.data?.data && JSON.parse(remoteMessage?.data?.data);
-        if (data?.type === 'call') {
-            await displayCallNotification(remoteMessage);
+        if (data) {
+            const { from, to, offer } = data;
+            if (from && to && offer) {
+                navigationRef?.current?.navigate(Screens.VideoCallScreen, {
+                    localUserId: to,
+                    remoteUserId: from,
+                    offer: offer,
+                });
+            }
         }
-    }
+    };
 
-    notifee.onBackgroundEvent(async ({ type, detail }) => { });
-};
+    const handleCallReject = (remoteMessage) => {
+        InCallManager.stopRingtone();
+        const data = remoteMessage?.data?.data && JSON.parse(remoteMessage?.data?.data);
+        if (data) {
+            const { from, to } = data;
+            !socketServices.socket && socketServices.initializeSocket();
+            socketServices.emit('hangup', { from: to, to: from });
+        }
+    };
+
+    return {
+        displayCallNotification,
+        handleCallAccept,
+        handleCallReject,
+    }
+}

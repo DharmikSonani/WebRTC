@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Platform, PermissionsAndroid } from 'react-native';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
-const useVideoCallPermissions = () => {
+export const useVideoCallPermissions = () => {
     const [permissionsGranted, setPermissionsGranted] = useState(false);
 
     const checkAndRequestPermissions = async () => {
@@ -43,5 +43,3 @@ const useVideoCallPermissions = () => {
 
     return { permissionsGranted, checkAndRequestPermissions };
 };
-
-export default useVideoCallPermissions;

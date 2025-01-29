@@ -6,12 +6,11 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
 });
 
-async function sendPushNotification(token, data = {}, title = 'WebRTC', body = 'Incoming Call Notification') {
+async function sendPushNotification(token, data = {}, title = 'WebRTC', body = '') {
     const message = {
         notification: {
             title: title,
-            // body: body,
-            body: `Incoming Video Call From ${data.from}`,
+            body: body,
         },
         token: token,
         data: { data: JSON.stringify(data) },

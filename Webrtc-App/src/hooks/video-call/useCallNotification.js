@@ -57,14 +57,14 @@ export const useCallNotification = ({
                 },
                 actions: [
                     {
-                        title: 'Join',
+                        title: `<p style="color: #4CAF50;"><b>Join</b></p>`,
                         pressAction: {
                             id: 'accept',
                             launchActivity: 'default', // Launch app from background or kill mode
                         },
                     },
                     {
-                        title: 'Decline',
+                        title: `<p style="color: #F44336;"><b>Decline</b></p>`,
                         pressAction: { id: 'reject' },
                     },
                 ],

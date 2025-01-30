@@ -1,6 +1,6 @@
 # Errors
 
-### [TypeError: Cannot read property 'then' of undefined] (Android : Solution)
+### 1. [TypeError: Cannot read property 'then' of undefined] (Android : Solution)
 
 - **Go To File**
 ```

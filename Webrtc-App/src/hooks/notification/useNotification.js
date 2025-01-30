@@ -77,7 +77,7 @@ export const useNotification = ({
 
 
     // App Kill Mode Notification Press
-    // messaging().getInitialNotification().then(async (remoteMessage) => { });
+    // messaging().getInitialNotification()?.then(async (remoteMessage) => { });
 
     return {}
 };

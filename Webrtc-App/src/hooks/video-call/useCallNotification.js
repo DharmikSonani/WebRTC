@@ -38,7 +38,14 @@ export const useCallNotification = ({
                 showTimestamp: true,
                 category: AndroidCategory.CALL,
                 lightUpScreen: true,
+                fullScreenAction: {
+                    id: 'default',
+                },
                 smallIcon: 'ic_video_call_icon',
+                largeIcon: 'https://my-cdn.com/users/123456.png',
+                color: '#4CAF50',
+                colorized: true,
+                timeoutAfter: 1000 * 60, // Swipe notification after ms
                 style: {
                     type: AndroidStyle.MESSAGING,
                     person: {
@@ -51,6 +58,7 @@ export const useCallNotification = ({
                             person: {
                                 name: from ?? 'WebRTC',
                                 icon: 'https://img.freepik.com/premium-photo/high-quality-digital-image-wallpaper_783884-112874.jpg',
+                                important: true,
                             },
                         },
                     ],

@@ -1,5 +1,5 @@
 import InCallManager from "react-native-incall-manager";
-import notifee, { AndroidImportance, AndroidStyle } from '@notifee/react-native';
+import notifee, { AndroidCategory, AndroidImportance, AndroidStyle, AndroidVisibility } from '@notifee/react-native';
 import socketServices from "../../api/socketServices";
 import { Screens } from "../../routes/helper";
 
@@ -18,6 +18,8 @@ export const useCallNotification = ({
             lights: false,
             vibration: false,
             importance: AndroidImportance.HIGH,
+            bypassDnd: true,
+            visibility: AndroidVisibility.PUBLIC,
         });
 
         const data = remoteMessage?.data?.data && JSON.parse(remoteMessage?.data?.data);
@@ -25,22 +27,25 @@ export const useCallNotification = ({
         const { from, to } = data;
 
         await notifee.displayNotification({
-            title: 'WebRTC',
-            body: 'WebRTC',
+            title: 'Incoming call',
+            body: 'Tap to answer',
             android: {
                 channelId,
                 importance: AndroidImportance.HIGH,
+                visibility: AndroidVisibility.PUBLIC,
                 ongoing: true,
                 autoCancel: false,
+                showTimestamp: true,
+                category: AndroidCategory.CALL,
+                lightUpScreen: true,
+                smallIcon: 'ic_video_call_icon',
                 style: {
                     type: AndroidStyle.MESSAGING,
                     person: {
                         name: to ?? 'WebRTC',
-                        // icon: 'https://img.freepik.com/premium-photo/high-quality-digital-image-wallpaper_783884-112874.jpg',
                     },
                     messages: [
                         {
-                            // text: remoteMessage.notification?.body || 'You have an incoming call',
                             text: '📹 Incoming video call',
                             timestamp: Date.now(),
                             person: {

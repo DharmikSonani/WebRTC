@@ -23,7 +23,7 @@ export const useNotification = ({
 
 
     // Foreground Notification Handler
-    messaging().onMessage(async (remoteMessage) => {
+    messaging().onMessage((remoteMessage) => {
         handleNotification(remoteMessage);
     });
 
@@ -45,14 +45,12 @@ export const useNotification = ({
 
 
     // Background Notification Handler
-    messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+    messaging().setBackgroundMessageHandler((remoteMessage) => {
         handleNotification(remoteMessage);
     });
 
     // Background Nofication Press
-    // messaging().onNotificationOpenedApp(remoteMessage => {
-    //     handleCallAccept(remoteMessage);
-    // });
+    // messaging().onNotificationOpenedApp(remoteMessage => { });
 
     notifee.onBackgroundEvent(async ({ type, detail }) => {
         if (type === EventType.ACTION_PRESS) {
@@ -79,17 +77,7 @@ export const useNotification = ({
 
 
     // App Kill Mode Notification Press
-    // messaging().getInitialNotification().then(async (remoteMessage) => {
-    //     if (navigationRef?.current == null) {
-    //         timeoutId && clearTimeout(timeoutId);
-    //         timeoutId = setTimeout(() => {
-    //             clearTimeout(timeoutId);
-    //             handleCallAccept(remoteMessage);
-    //         }, 1000);
-    //     } else {
-    //         handleCallAccept(remoteMessage);
-    //     }
-    // });
+    // messaging().getInitialNotification().then(async (remoteMessage) => { });
 
     return {}
 };

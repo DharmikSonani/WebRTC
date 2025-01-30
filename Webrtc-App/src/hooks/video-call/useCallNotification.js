@@ -1,5 +1,5 @@
 import InCallManager from "react-native-incall-manager";
-import notifee, { AndroidImportance } from '@notifee/react-native';
+import notifee, { AndroidImportance, AndroidStyle } from '@notifee/react-native';
 import socketServices from "../../api/socketServices";
 import { Screens } from "../../routes/helper";
 
@@ -20,21 +20,46 @@ export const useCallNotification = ({
             importance: AndroidImportance.HIGH,
         });
 
+        const data = remoteMessage?.data?.data && JSON.parse(remoteMessage?.data?.data);
+
+        const { from, to } = data;
+
         await notifee.displayNotification({
-            title: remoteMessage.notification?.title || 'Incoming Call',
-            body: remoteMessage.notification?.body || 'You have an incoming call',
+            title: 'WebRTC',
+            body: 'WebRTC',
             android: {
                 channelId,
                 importance: AndroidImportance.HIGH,
                 ongoing: true,
                 autoCancel: false,
+                style: {
+                    type: AndroidStyle.MESSAGING,
+                    person: {
+                        name: to ?? 'WebRTC',
+                        // icon: 'https://img.freepik.com/premium-photo/high-quality-digital-image-wallpaper_783884-112874.jpg',
+                    },
+                    messages: [
+                        {
+                            // text: remoteMessage.notification?.body || 'You have an incoming call',
+                            text: '📹 Incoming video call',
+                            timestamp: Date.now(),
+                            person: {
+                                name: from ?? 'WebRTC',
+                                icon: 'https://img.freepik.com/premium-photo/high-quality-digital-image-wallpaper_783884-112874.jpg',
+                            },
+                        },
+                    ],
+                },
                 actions: [
                     {
-                        title: 'Accept',
-                        pressAction: { id: 'accept' },
+                        title: 'Join',
+                        pressAction: {
+                            id: 'accept',
+                            launchActivity: 'default', // Launch app from background or kill mode
+                        },
                     },
                     {
-                        title: 'Reject',
+                        title: 'Decline',
                         pressAction: { id: 'reject' },
                     },
                 ],

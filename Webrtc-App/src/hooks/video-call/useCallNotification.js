@@ -1,5 +1,5 @@
 import InCallManager from "react-native-incall-manager";
-import notifee, { AndroidImportance } from '@notifee/react-native';
+import notifee, { AndroidCategory, AndroidImportance, AndroidStyle, AndroidVisibility } from '@notifee/react-native';
 import socketServices from "../../api/socketServices";
 import { Screens } from "../../routes/helper";
 
@@ -18,23 +18,61 @@ export const useCallNotification = ({
             lights: false,
             vibration: false,
             importance: AndroidImportance.HIGH,
+            bypassDnd: true,
+            visibility: AndroidVisibility.PUBLIC,
         });
 
+        const data = remoteMessage?.data?.data && JSON.parse(remoteMessage?.data?.data);
+
+        const { from, to } = data;
+
         await notifee.displayNotification({
-            title: remoteMessage.notification?.title || 'Incoming Call',
-            body: remoteMessage.notification?.body || 'You have an incoming call',
+            title: 'Incoming call',
+            body: 'Tap to answer',
             android: {
                 channelId,
                 importance: AndroidImportance.HIGH,
+                visibility: AndroidVisibility.PUBLIC,
                 ongoing: true,
                 autoCancel: false,
+                showTimestamp: true,
+                category: AndroidCategory.CALL,
+                lightUpScreen: true,
+                fullScreenAction: {
+                    id: 'default',
+                },
+                smallIcon: 'ic_video_call_icon',
+                largeIcon: 'https://my-cdn.com/users/123456.png',
+                color: '#4CAF50',
+                colorized: true,
+                timeoutAfter: 1000 * 60, // Swipe notification after ms
+                style: {
+                    type: AndroidStyle.MESSAGING,
+                    person: {
+                        name: to ?? 'WebRTC',
+                    },
+                    messages: [
+                        {
+                            text: '📹 Incoming video call',
+                            timestamp: Date.now(),
+                            person: {
+                                name: from ?? 'WebRTC',
+                                icon: 'https://img.freepik.com/premium-photo/high-quality-digital-image-wallpaper_783884-112874.jpg',
+                                important: true,
+                            },
+                        },
+                    ],
+                },
                 actions: [
                     {
-                        title: 'Accept',
-                        pressAction: { id: 'accept' },
+                        title: `<p style="color: #4CAF50;"><b>Join</b></p>`,
+                        pressAction: {
+                            id: 'accept',
+                            launchActivity: 'default', // Launch app from background or kill mode
+                        },
                     },
                     {
-                        title: 'Reject',
+                        title: `<p style="color: #F44336;"><b>Decline</b></p>`,
                         pressAction: { id: 'reject' },
                     },
                 ],

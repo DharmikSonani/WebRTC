@@ -23,7 +23,7 @@ export const useNotification = ({
 
 
     // Foreground Notification Handler
-    messaging().onMessage(async (remoteMessage) => {
+    messaging().onMessage((remoteMessage) => {
         handleNotification(remoteMessage);
     });
 
@@ -45,43 +45,39 @@ export const useNotification = ({
 
 
     // Background Notification Handler
-    messaging().setBackgroundMessageHandler(async (remoteMessage) => {
-        // handleNotification(remoteMessage);
+    messaging().setBackgroundMessageHandler((remoteMessage) => {
+        handleNotification(remoteMessage);
     });
 
     // Background Nofication Press
-    messaging().onNotificationOpenedApp(remoteMessage => {
-        handleCallAccept(remoteMessage);
-    });
+    // messaging().onNotificationOpenedApp(remoteMessage => { });
 
     notifee.onBackgroundEvent(async ({ type, detail }) => {
-        // if (type === EventType.ACTION_PRESS) {
-        //     if (detail.pressAction?.id === 'accept') {
-        //         handleCallAccept(detail.notification?.data);
-        //     } else if (detail.pressAction?.id === 'reject') {
-        //         handleCallReject(detail.notification?.data);
-        //     }
-        //     await notifee.cancelNotification(detail.notification?.id);
-        // }
-        // if (type === EventType.DISMISSED) {
-        //     handleCallReject(detail.notification?.data);
-        //     await notifee.cancelNotification(detail.notification?.id);
-        // }
+        if (type === EventType.ACTION_PRESS) {
+            if (detail.pressAction?.id === 'accept') {
+                if (navigationRef?.current == null) {
+                    timeoutId && clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => {
+                        clearTimeout(timeoutId);
+                        handleCallAccept(detail.notification?.data);
+                    }, 1000);
+                } else {
+                    handleCallAccept(detail.notification?.data);
+                }
+            } else if (detail.pressAction?.id === 'reject') {
+                handleCallReject(detail.notification?.data);
+            }
+            await notifee.cancelNotification(detail.notification?.id);
+        }
+        if (type === EventType.DISMISSED) {
+            handleCallReject(detail.notification?.data);
+            await notifee.cancelNotification(detail.notification?.id);
+        }
     });
 
 
     // App Kill Mode Notification Press
-    messaging().getInitialNotification().then(async (remoteMessage) => {
-        if (navigationRef?.current == null) {
-            timeoutId && clearTimeout(timeoutId);
-            timeoutId = setTimeout(() => {
-                clearTimeout(timeoutId);
-                handleCallAccept(remoteMessage);
-            }, 1000);
-        } else {
-            handleCallAccept(remoteMessage);
-        }
-    });
+    // messaging().getInitialNotification()?.then(async (remoteMessage) => { });
 
     return {}
 };

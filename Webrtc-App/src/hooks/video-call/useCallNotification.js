@@ -2,83 +2,112 @@ import InCallManager from "react-native-incall-manager";
 import notifee, { AndroidCategory, AndroidImportance, AndroidStyle, AndroidVisibility } from '@notifee/react-native';
 import socketServices from "../../api/socketServices";
 import { Screens } from "../../routes/helper";
+import { Platform } from "react-native";
 
 export const useCallNotification = ({
     navigationRef
 }) => {
 
     const displayCallNotification = async (remoteMessage) => {
+        try {
 
-        InCallManager.stopRingtone();
-        InCallManager.startRingtone();
+            InCallManager.stopRingtone();
+            InCallManager.startRingtone();
 
-        const channelId = await notifee.createChannel({
-            id: remoteMessage.from.toString(),
-            name: 'WebRTC',
-            lights: false,
-            vibration: false,
-            importance: AndroidImportance.HIGH,
-            bypassDnd: true,
-            visibility: AndroidVisibility.PUBLIC,
-        });
-
-        const data = remoteMessage?.data?.data && JSON.parse(remoteMessage?.data?.data);
-
-        const { from, to } = data;
-
-        await notifee.displayNotification({
-            title: 'Incoming call',
-            body: 'Tap to answer',
-            android: {
-                channelId,
+            const channelId = await notifee.createChannel({
+                id: remoteMessage.from.toString(),
+                name: 'WebRTC',
+                lights: false,
+                vibration: false,
                 importance: AndroidImportance.HIGH,
+                bypassDnd: true,
                 visibility: AndroidVisibility.PUBLIC,
-                ongoing: true,
-                autoCancel: false,
-                showTimestamp: true,
-                category: AndroidCategory.CALL,
-                lightUpScreen: true,
-                fullScreenAction: {
-                    id: 'default',
-                },
-                smallIcon: 'ic_video_call_icon',
-                largeIcon: 'https://my-cdn.com/users/123456.png',
-                color: '#4CAF50',
-                colorized: true,
-                timeoutAfter: 1000 * 60, // Swipe notification after ms
-                style: {
-                    type: AndroidStyle.MESSAGING,
-                    person: {
-                        name: to ?? 'WebRTC',
-                    },
-                    messages: [
+            });
+
+            const data = remoteMessage?.data?.data && JSON.parse(remoteMessage?.data?.data);
+
+            const { from, to } = data;
+
+            Platform.OS == 'ios' && await notifee.setNotificationCategories([
+                {
+                    id: 'incoming-call',
+                    actions: [
                         {
-                            text: '📹 Incoming video call',
-                            timestamp: Date.now(),
-                            person: {
-                                name: from ?? 'WebRTC',
-                                icon: 'https://img.freepik.com/premium-photo/high-quality-digital-image-wallpaper_783884-112874.jpg',
-                                important: true,
-                            },
+                            title: `Join`,
+                            id: 'accept',
+                            foreground: true,
+                        },
+                        {
+                            title: `Decline`,
+                            id: 'reject',
                         },
                     ],
                 },
-                actions: [
-                    {
-                        title: `<p style="color: #4CAF50;"><b>Join</b></p>`,
-                        pressAction: {
-                            id: 'accept',
-                            launchActivity: 'default', // Launch app from background or kill mode
+            ]);
+
+            await notifee.displayNotification({
+                title: Platform.OS == 'android' ? `Incoming call` : from ?? 'WebRTC',
+                body: Platform.OS == 'android' ? 'Tap to answer' : `📹 Incoming video call`,
+                ios: {
+                    categoryId: 'incoming-call',
+                    attachments: [
+                        {
+                            url: 'https://img.freepik.com/premium-photo/high-quality-digital-image-wallpaper_783884-112874.jpg',
                         },
+                    ],
+                },
+                android: {
+                    channelId,
+                    importance: AndroidImportance.HIGH,
+                    visibility: AndroidVisibility.PUBLIC,
+                    ongoing: true,
+                    autoCancel: false,
+                    showTimestamp: true,
+                    category: AndroidCategory.CALL,
+                    lightUpScreen: true,
+                    fullScreenAction: {
+                        id: 'default',
                     },
-                    {
-                        title: `<p style="color: #F44336;"><b>Decline</b></p>`,
-                        pressAction: { id: 'reject' },
+                    smallIcon: 'ic_video_call_icon',
+                    color: '#4CAF50',
+                    colorized: true,
+                    timeoutAfter: 1000 * 60, // Swipe notification after ms
+                    style: {
+                        type: AndroidStyle.MESSAGING,
+                        person: {
+                            name: to ?? 'WebRTC',
+                        },
+                        messages: [
+                            {
+                                text: '📹 Incoming video call',
+                                timestamp: Date.now(),
+                                person: {
+                                    name: from ?? 'WebRTC',
+                                    icon: 'https://img.freepik.com/premium-photo/high-quality-digital-image-wallpaper_783884-112874.jpg',
+                                    important: true,
+                                },
+                            },
+                        ],
                     },
-                ],
-            },
-            data: remoteMessage,
-        });
+                    actions: [
+                        {
+                            title: `<p style="color: #4CAF50;"><b>Join</b></p>`,
+                            pressAction: {
+                                id: 'accept',
+                                launchActivity: 'default', // Launch app from background or kill mode
+                            },
+                        },
+                        {
+                            title: `<p style="color: #F44336;"><b>Decline</b></p>`,
+                            pressAction: { id: 'reject' },
+                        },
+                    ],
+                },
+                data: remoteMessage,
+            });
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     const handleCallAccept = (remoteMessage) => {

@@ -1,4 +1,4 @@
-import React, { memo, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { StatusBar } from 'react-native'
 import { createNavigationContainerRef, NavigationContainer } from '@react-navigation/native';
 import { NavigationHandler } from './routes';
@@ -26,4 +26,4 @@ const App = () => {
   )
 }
 
-export default memo(App)
+export default App

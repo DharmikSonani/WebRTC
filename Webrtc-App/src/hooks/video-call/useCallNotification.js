@@ -16,7 +16,7 @@ export const useCallNotification = ({
             InCallManager.startRingtone();
 
             const channelId = await notifee.createChannel({
-                id: remoteMessage.from.toString(),
+                id: remoteMessage?.messageId?.toString(),
                 name: 'WebRTC',
                 lights: false,
                 vibration: false,
@@ -131,7 +131,7 @@ export const useCallNotification = ({
         const data = remoteMessage?.data?.data && JSON.parse(remoteMessage?.data?.data);
         if (data) {
             const { from, to } = data;
-            !socketServices.socket && socketServices.initializeSocket();
+            !socketServices?.socket?.connected && socketServices.initializeSocket();
             socketServices.emit(sockets.VideoCall.hangup, { from: to, to: from });
         }
     };

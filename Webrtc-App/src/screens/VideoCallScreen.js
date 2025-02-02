@@ -7,6 +7,7 @@ import DraggableView from '../components/DraggableView';
 import InCallManager from 'react-native-incall-manager';
 import { useFCM } from '../hooks/notification/useFCM';
 import { useWebrtcForVC } from '../hooks/video-call/useWebrtcForVC';
+import { sockets } from '../api/helper';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -19,7 +20,7 @@ const VideoCallScreen = () => {
     const offer = route?.params?.offer;
 
     const onCreateOffer = (offer) => {
-        socketServices.emit('offer', {
+        socketServices.emit(sockets.VideoCall.offer, {
             from: localUserId,
             to: remoteUserId,
             offer: offer,
@@ -27,7 +28,7 @@ const VideoCallScreen = () => {
     }
 
     const onAnswerOffer = (answer) => {
-        socketServices.emit('answer', {
+        socketServices.emit(sockets.VideoCall.answer, {
             from: localUserId,
             to: remoteUserId,
             answer: answer,
@@ -35,7 +36,7 @@ const VideoCallScreen = () => {
     }
 
     const onIceCandidate = (candidate) => {
-        socketServices.emit('candidate', {
+        socketServices.emit(sockets.VideoCall.candidate, {
             from: localUserId,
             to: remoteUserId,
             candidate: candidate,
@@ -69,15 +70,15 @@ const VideoCallScreen = () => {
     // Socket
     useEffect(() => {
         if (fcmToken || Platform.OS == 'ios') {
-            socketServices.emit('JoinSocket', {
+            socketServices.emit(sockets.JoinSocket, {
                 userId: localUserId,
                 fcmToken: fcmToken ?? '',
             });
 
-            // socketServices.on('offer', handleIncomingCall);
-            socketServices.on('answer', handleAnswer);
-            socketServices.on('candidate', (data) => { handleCandidate(remoteUserId, data) });
-            socketServices.on('hangup', handleRemoteHangup);
+            // socketServices.on(sockets.VideoCall.offer, handleIncomingCall);
+            socketServices.on(sockets.VideoCall.answer, handleAnswer);
+            socketServices.on(sockets.VideoCall.candidate, (data) => { handleCandidate(remoteUserId, data) });
+            socketServices.on(sockets.VideoCall.hangup, handleRemoteHangup);
 
             if (offer) {
                 onCallAccept({ offer });
@@ -85,18 +86,18 @@ const VideoCallScreen = () => {
             }
 
             return () => {
-                socketServices.emit('LeaveSocket', localUserId);
-                // socketServices.removeListener('offer');
-                socketServices.removeListener('answer');
-                socketServices.removeListener('candidate');
-                socketServices.removeListener('hangup');
+                socketServices.emit(sockets.LeaveSocket, localUserId);
+                // socketServices.removeListener(sockets.VideoCall.offer);
+                socketServices.removeListener(sockets.VideoCall.answer);
+                socketServices.removeListener(sockets.VideoCall.candidate);
+                socketServices.removeListener(sockets.VideoCall.hangup);
             }
         }
     }, [fcmToken])
 
     const onHangUpPress = () => {
         InCallManager.stopRingtone();
-        socketServices.emit('hangup', { from: localUserId, to: remoteUserId });
+        socketServices.emit(sockets.VideoCall.hangup, { from: localUserId, to: remoteUserId });
         navigation.canGoBack() && navigation.goBack();
     };
 

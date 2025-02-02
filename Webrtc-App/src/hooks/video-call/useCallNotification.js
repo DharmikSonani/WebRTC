@@ -3,6 +3,7 @@ import notifee, { AndroidCategory, AndroidImportance, AndroidStyle, AndroidVisib
 import socketServices from "../../api/socketServices";
 import { Screens } from "../../routes/helper";
 import { Platform } from "react-native";
+import { sockets } from "../../api/helper";
 
 export const useCallNotification = ({
     navigationRef
@@ -131,7 +132,7 @@ export const useCallNotification = ({
         if (data) {
             const { from, to } = data;
             !socketServices.socket && socketServices.initializeSocket();
-            socketServices.emit('hangup', { from: to, to: from });
+            socketServices.emit(sockets.VideoCall.hangup, { from: to, to: from });
         }
     };
 

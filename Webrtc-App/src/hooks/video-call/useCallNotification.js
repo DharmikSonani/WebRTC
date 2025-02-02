@@ -63,8 +63,6 @@ export const useCallNotification = ({
                     channelId,
                     importance: AndroidImportance.HIGH,
                     visibility: AndroidVisibility.PUBLIC,
-                    ongoing: true,
-                    autoCancel: false,
                     showTimestamp: true,
                     category: AndroidCategory.CALL,
                     lightUpScreen: true,

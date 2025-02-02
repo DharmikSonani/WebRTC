@@ -16,7 +16,7 @@ function initializeSocket(server) {
     console.log(`User connected: ${socket.id}`);
 
     // Join Socket
-    socket.on('JoinSocket', (data) => {
+    socket.on('join-socket', (data) => {
       const { userId, fcmToken } = data;
       fcmTokens[userId] = fcmToken;
       console.log(`Join Socket: ${userId}`);
@@ -24,7 +24,7 @@ function initializeSocket(server) {
     });
 
     // Leave Socket
-    socket.on('LeaveSocket', (userId) => {
+    socket.on('leave-socket', (userId) => {
       console.log(`Leave Socket: ${userId}`);
       socket.leave(userId);
     });

@@ -1,5 +1,5 @@
 const { Server } = require('socket.io');
-const { sendPushNotification } = require('../notification/notification');
+const { sendDataOnlyNotification } = require('../notification/notification');
 
 let io;
 
@@ -32,7 +32,7 @@ function initializeSocket(server) {
     // Broadcast offer to peer
     socket.on('offer', async (data) => {
       // console.log(`Offer : ${JSON.stringify(data)}`);
-      fcmTokens[data.to] != fcmTokens[data.from] ? await sendPushNotification(fcmTokens[data.to], { ...data, type: 'incoming-call' }, 'WebRTC', `Incoming Video Call From ${data.from}`) : delete fcmTokens[data.from];
+      fcmTokens[data.to] != fcmTokens[data.from] ? await sendDataOnlyNotification(fcmTokens[data.to], { ...data, type: 'incoming-call' }) : delete fcmTokens[data.from];
       io.to(data.to).emit('offer', { offer: data.offer, from: data.from });
     });
 

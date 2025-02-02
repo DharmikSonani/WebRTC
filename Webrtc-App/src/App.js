@@ -12,7 +12,8 @@ useNotification({ navigationRef });
 const App = () => {
 
   useEffect(() => {
-    socketServices.initializeSocket();
+    !socketServices?.socket?.connected && socketServices.initializeSocket();
+    return () => { socketServices?.socket?.connected && socketServices?.socket?.disconnect(); }
   }, [])
 
   return (

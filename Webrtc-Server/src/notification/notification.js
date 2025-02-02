@@ -1,12 +1,13 @@
-var admin = require("firebase-admin");
+var admin = require('firebase-admin');
 
-const serviceAccount = require("../../webrtc-video-call-notification-firebase.json");
+const serviceAccount = require('../../webrtc-video-call-notification-firebase.json');
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
 });
 
-async function sendPushNotification(token, data = {}, title = 'WebRTC', body = '') {
+// Triggers system notifications for frontend
+const sendPushNotification = async (token, data = {}, title = 'WebRTC', body = '') => {
     const message = {
         notification: {
             title: title,
@@ -25,4 +26,29 @@ async function sendPushNotification(token, data = {}, title = 'WebRTC', body = '
     }
 }
 
-module.exports = { sendPushNotification };
+// Only wakes app in background for frontend
+const sendDataOnlyNotification = async (token, data = {}) => {
+    const message = {
+        data: { data: JSON.stringify(data) },
+        token: token,
+        android: {
+            priority: 'high',
+        },
+        apns: {
+            payload: {
+                aps: {
+                    'content-available': true,
+                },
+            },
+        },
+    };
+
+    try {
+        const response = await admin.messaging().send(message);
+        console.log('Data-Only Notification sent successfully:', response);
+    } catch (error) {
+        console.log('Error sending Data-Only Notification:', error);
+    }
+}
+
+module.exports = { sendPushNotification, sendDataOnlyNotification };

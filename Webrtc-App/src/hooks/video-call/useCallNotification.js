@@ -15,6 +15,8 @@ export const useCallNotification = ({
             InCallManager.stopRingtone();
             InCallManager.startRingtone();
 
+            await notifee.cancelAllNotifications();
+
             const channelId = await notifee.createChannel({
                 id: remoteMessage?.messageId?.toString(),
                 name: 'WebRTC',

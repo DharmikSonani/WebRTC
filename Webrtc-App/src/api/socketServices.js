@@ -1,6 +1,7 @@
 import io from 'socket.io-client';
 
-const SOCKET_URL = `https://formally-valid-mite.ngrok-free.app/`;
+const SOCKET_URL = `https://formally-valid-mite.ngrok-free.app/`; // Local Server
+// const SOCKET_URL = `https://webrtc-130h.onrender.com/`; // Live Server
 
 class WSService {
     initializeSocket = async (url) => {

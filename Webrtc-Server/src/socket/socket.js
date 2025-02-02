@@ -13,13 +13,13 @@ function initializeSocket(server) {
     console.log(`User connected: ${socket.id}`);
 
     // Join Socket
-    socket.on('JoinSocket', (userID) => {
+    socket.on('join-socket', (userID) => {
       console.log(`Join Socket: ${userID}`);
       socket.join(userID);
     });
 
     // Leave Socket
-    socket.on('LeaveSocket', (userID) => {
+    socket.on('leave-socket', (userID) => {
       console.log(`Leave Socket: ${userID}`);
       socket.leave(userID);
     });

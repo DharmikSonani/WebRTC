@@ -4,6 +4,7 @@ import { createNavigationContainerRef, NavigationContainer } from '@react-naviga
 import { NavigationHandler } from './routes';
 import socketServices from './api/socketServices';
 import { useNotification } from './hooks/notification/useNotification';
+import notifee from '@notifee/react-native';
 
 const navigationRef = createNavigationContainerRef();
 
@@ -13,8 +14,11 @@ const App = () => {
 
   useEffect(() => {
     !socketServices?.socket?.connected && socketServices.initializeSocket();
+    requestNotificationPermission()
     return () => { socketServices?.socket?.connected && socketServices?.socket?.disconnect(); }
   }, [])
+
+  const requestNotificationPermission = async () => { await notifee.requestPermission() };
 
   return (
     <>

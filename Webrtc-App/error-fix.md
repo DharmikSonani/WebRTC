@@ -1,20 +1,33 @@
 # Errors
 
-### 1. TypeError: Cannot read property 'then' of undefined (Android : Solution)
+### 1. Resolve the automatic call of messaging().setBackgroundMessageHandler
 
-- **Go To File**
+#### Android
+- **android/gradle.properties**
 ```
-node_modules/react-native/Libraries/ReactNative/AppRegistry.js
+newArchEnabled=false
 ```
+
+#### IOS
+- **ios/Podfile**
+- above linkage = ENV['USE_FRAMEWORKS']
+```
+ENV['RCT_NEW_ARCH_ENABLED'] = '0'
+```
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+### 2. TypeError: Cannot read property 'then' of undefined
 
 - **Find**
 ```
-taskProvider()(data)
-.then
+messaging().setBackgroundMessageHandler
 ```
 
-- **Replace With**
+- **Add return Promise.resolve();**
 ```
-taskProvider()(data)
-?.then
+messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+    // Rest of the code
+    return Promise.resolve(); // Add this line
+});
 ```

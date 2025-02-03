@@ -44,9 +44,10 @@ export const useNotification = ({
     });
 
 
-    // Background Notification Handler
+    // Background Notification Handler (To resolve automatic call of messaging().setBackgroundMessageHandler follow 1st solution of error-fix.md)
     messaging().setBackgroundMessageHandler((remoteMessage) => {
         handleNotification(remoteMessage);
+        return Promise.resolve();
     });
 
     // Background Nofication Press

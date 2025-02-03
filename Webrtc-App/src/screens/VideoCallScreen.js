@@ -98,6 +98,7 @@ const VideoCallScreen = () => {
     const onHangUpPress = () => {
         InCallManager.stopRingtone();
         socketServices.emit(sockets.VideoCall.hangup, { from: localUserId, to: remoteUserId });
+        !callConnected && socketServices.emit(sockets.VideoCall.missCallNotification, { from: localUserId, to: remoteUserId });
         navigation.canGoBack() && navigation.goBack();
     };
 

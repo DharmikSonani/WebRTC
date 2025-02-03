@@ -65,7 +65,7 @@ function initializeSocket(server) {
         ...data,
       }
       fcmTokens[data.to] != fcmTokens[data.from] ? (fcmTokens[data.to] && await sendDataOnlyNotification(fcmTokens[data.to], notificationData)) : delete fcmTokens[data.from];
-      // io.to(data.to).emit('hangup-notification', { from: data.from });
+      // io.to(data.to).emit('miss-call-notification', { from: data.from });
     });
 
     // Handle ICE candidate

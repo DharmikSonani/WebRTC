@@ -1,9 +1,8 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { TextInput } from 'react-native-gesture-handler';
 import { Screens } from '../routes/helper';
-import notifee from '@notifee/react-native';
 
 const JoinCallScreen = () => {
 
@@ -19,10 +18,6 @@ const JoinCallScreen = () => {
             remoteUserId: remoteUserId.trim(),
         });
     }
-
-    useEffect(() => { requestPermission() }, [])
-
-    const requestPermission = async () => { await notifee.requestPermission() };
 
     return (
         <View style={styles.Container}>

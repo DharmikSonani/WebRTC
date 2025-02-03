@@ -6,5 +6,6 @@ export const sockets = {
         answer: 'answer',
         hangup: 'hangup',
         candidate: 'candidate',
+        missCallNotification: 'miss-call-notification',
     }
 }

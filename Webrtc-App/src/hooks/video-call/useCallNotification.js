@@ -6,19 +6,20 @@ import { Platform } from "react-native";
 import { sockets } from "../../api/helper";
 
 export const useCallNotification = ({
-    navigationRef
+    navigationRef,
+    clearIncomingCallNotification = (channelId) => { console.log(`Initial clear incoming call notification: ${channelId}`); }
 }) => {
 
-    const displayCallNotification = async (remoteMessage) => {
+    const handleIncomingCallNotification = async (remoteMessage) => {
         try {
 
             InCallManager.stopRingtone();
             InCallManager.startRingtone();
 
-            await notifee.cancelAllNotifications();
+            clearIncomingCallNotification('incoming-call');
 
             const channelId = await notifee.createChannel({
-                id: remoteMessage?.messageId?.toString(),
+                id: 'incoming-call',
                 name: 'WebRTC',
                 lights: false,
                 vibration: false,
@@ -67,6 +68,7 @@ export const useCallNotification = ({
                     showTimestamp: true,
                     category: AndroidCategory.CALL,
                     lightUpScreen: true,
+                    autoCancel: false,
                     ongoing: false,
                     smallIcon: 'ic_video_call_icon',
                     timeoutAfter: 1000 * 60, // Swipe notification after ms
@@ -108,6 +110,45 @@ export const useCallNotification = ({
         }
     };
 
+    const handleMissCallNotification = async (remoteMessage) => {
+        try {
+
+            InCallManager.stopRingtone();
+
+            clearIncomingCallNotification('incoming-call');
+
+            const channelId = await notifee.createChannel({
+                id: 'miss-call',
+                name: 'WebRTC',
+                lights: false,
+                vibration: false,
+                importance: AndroidImportance.HIGH,
+                visibility: AndroidVisibility.PUBLIC,
+            });
+
+            const data = remoteMessage?.data?.data && JSON.parse(remoteMessage?.data?.data);
+
+            const { from } = data;
+
+            await notifee.displayNotification({
+                title: from ?? 'WebRTC',
+                body: `Missed video call`,
+                android: {
+                    channelId,
+                    importance: AndroidImportance.HIGH,
+                    visibility: AndroidVisibility.PUBLIC,
+                    showTimestamp: true,
+                    category: AndroidCategory.CALL,
+                    lightUpScreen: true,
+                    autoCancel: false,
+                    ongoing: false,
+                },
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
     const handleCallAccept = (remoteMessage) => {
         InCallManager.stopRingtone();
         const data = remoteMessage?.data?.data && JSON.parse(remoteMessage?.data?.data);
@@ -134,7 +175,8 @@ export const useCallNotification = ({
     };
 
     return {
-        displayCallNotification,
+        handleIncomingCallNotification,
+        handleMissCallNotification,
         handleCallAccept,
         handleCallReject,
     }

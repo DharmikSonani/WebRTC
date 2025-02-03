@@ -32,7 +32,7 @@ function initializeSocket(server) {
     // Broadcast offer to peer
     socket.on('offer', async (data) => {
       // console.log(`Offer : ${JSON.stringify(data)}`);
-      fcmTokens[data.to] != fcmTokens[data.from] ? await sendDataOnlyNotification(fcmTokens[data.to], { ...data, type: 'incoming-call' }) : delete fcmTokens[data.from];
+      fcmTokens[data.to] != fcmTokens[data.from] ? (fcmTokens[data.to] && await sendDataOnlyNotification(fcmTokens[data.to], { ...data, type: 'incoming-call' })) : delete fcmTokens[data.from];
       io.to(data.to).emit('offer', { offer: data.offer, from: data.from });
     });
 
@@ -46,6 +46,13 @@ function initializeSocket(server) {
     socket.on('hangup', (data) => {
       // console.log(`Hang Up : ${JSON.stringify(data)}`);
       io.to(data.to).emit('hangup', { from: data.from });
+    });
+
+    // Miss Call Notification
+    socket.on('miss-call-notification', async (data) => {
+      // console.log(`Miss Call Notification: ${JSON.stringify(data)}`);
+      fcmTokens[data.to] != fcmTokens[data.from] ? (fcmTokens[data.to] && await sendDataOnlyNotification(fcmTokens[data.to], { ...data, type: 'miss-call' })) : delete fcmTokens[data.from];
+      // io.to(data.to).emit('hangup-notification', { from: data.from });
     });
 
     // Handle ICE candidate

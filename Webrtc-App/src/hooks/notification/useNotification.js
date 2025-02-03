@@ -1,6 +1,7 @@
 import messaging from '@react-native-firebase/messaging';
 import notifee, { EventType } from '@notifee/react-native';
 import { useCallNotification } from '../video-call/useCallNotification';
+import { Platform } from 'react-native';
 
 export const useNotification = ({
     navigationRef,
@@ -8,17 +9,43 @@ export const useNotification = ({
 
     var timeoutId = '';
 
+    const clearNotificationByChannelId = async (channelId) => {
+        const notifications = await notifee.getDisplayedNotifications();
+
+        const incomingCallNotifications = notifications.filter((notification) => {
+            if (Platform.OS == 'android') { return notification.notification.android.channelId == channelId }
+            if (Platform.OS == 'ios') { return notification.notification.ios.categoryId == channelId }
+        });
+
+        for (const notification of incomingCallNotifications) {
+            await notifee.cancelNotification(notification.id);
+        }
+    }
+
     const {
-        displayCallNotification,
+        handleIncomingCallNotification,
+        handleMissCallNotification,
         handleCallAccept,
         handleCallReject
-    } = useCallNotification({ navigationRef });
+    } = useCallNotification({
+        navigationRef,
+        clearIncomingCallNotification: clearNotificationByChannelId,
+    });
 
     // Filter notification based on type of notification received by backend
     const handleNotification = async (remoteMessage) => {
         const data = remoteMessage?.data?.data && JSON.parse(remoteMessage?.data?.data);
 
-        data?.type === 'incoming-call' && await displayCallNotification(remoteMessage);
+        switch (data?.type) {
+            case 'incoming-call':
+                await handleIncomingCallNotification(remoteMessage)
+                break;
+            case 'miss-call':
+                await handleMissCallNotification(remoteMessage)
+                break;
+            default:
+                break;
+        }
     }
 
 

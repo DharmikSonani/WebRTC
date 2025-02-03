@@ -1,5 +1,6 @@
 const { Server } = require('socket.io');
 const { sendDataOnlyNotification } = require('../notification/notification');
+const { userImages } = require('../temp');
 
 let io;
 
@@ -32,7 +33,13 @@ function initializeSocket(server) {
     // Broadcast offer to peer
     socket.on('offer', async (data) => {
       // console.log(`Offer : ${JSON.stringify(data)}`);
-      fcmTokens[data.to] != fcmTokens[data.from] ? (fcmTokens[data.to] && await sendDataOnlyNotification(fcmTokens[data.to], { ...data, type: 'incoming-call' })) : delete fcmTokens[data.from];
+      const notificationData = {
+        username: data.from,
+        profileImage: userImages[data.from],
+        type: 'incoming-call',
+        ...data,
+      }
+      fcmTokens[data.to] != fcmTokens[data.from] ? (fcmTokens[data.to] && await sendDataOnlyNotification(fcmTokens[data.to], notificationData)) : delete fcmTokens[data.from];
       io.to(data.to).emit('offer', { offer: data.offer, from: data.from });
     });
 
@@ -51,7 +58,13 @@ function initializeSocket(server) {
     // Miss Call Notification
     socket.on('miss-call-notification', async (data) => {
       // console.log(`Miss Call Notification: ${JSON.stringify(data)}`);
-      fcmTokens[data.to] != fcmTokens[data.from] ? (fcmTokens[data.to] && await sendDataOnlyNotification(fcmTokens[data.to], { ...data, type: 'miss-call' })) : delete fcmTokens[data.from];
+      const notificationData = {
+        username: data.from,
+        profileImage: userImages[data.from],
+        type: 'miss-call',
+        ...data,
+      }
+      fcmTokens[data.to] != fcmTokens[data.from] ? (fcmTokens[data.to] && await sendDataOnlyNotification(fcmTokens[data.to], notificationData)) : delete fcmTokens[data.from];
       // io.to(data.to).emit('hangup-notification', { from: data.from });
     });
 

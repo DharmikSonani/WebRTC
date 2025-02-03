@@ -23,7 +23,6 @@ export const useCallNotification = ({
                 lights: false,
                 vibration: false,
                 importance: AndroidImportance.HIGH,
-                bypassDnd: true,
                 visibility: AndroidVisibility.PUBLIC,
             });
 
@@ -31,22 +30,24 @@ export const useCallNotification = ({
 
             const { from, to } = data;
 
-            Platform.OS == 'ios' && await notifee.setNotificationCategories([
-                {
-                    id: 'incoming-call',
-                    actions: [
-                        {
-                            title: `Join`,
-                            id: 'accept',
-                            foreground: true,
-                        },
-                        {
-                            title: `Decline`,
-                            id: 'reject',
-                        },
-                    ],
-                },
-            ]);
+            if (Platform.OS == 'ios') {
+                await notifee.setNotificationCategories([
+                    {
+                        id: 'incoming-call',
+                        actions: [
+                            {
+                                title: `Join`,
+                                id: 'accept',
+                                foreground: true,
+                            },
+                            {
+                                title: `Decline`,
+                                id: 'reject',
+                            },
+                        ],
+                    },
+                ]);
+            }
 
             await notifee.displayNotification({
                 title: Platform.OS == 'android' ? `Incoming call` : from ?? 'WebRTC',
@@ -66,12 +67,8 @@ export const useCallNotification = ({
                     showTimestamp: true,
                     category: AndroidCategory.CALL,
                     lightUpScreen: true,
-                    fullScreenAction: {
-                        id: 'default',
-                    },
+                    ongoing: false,
                     smallIcon: 'ic_video_call_icon',
-                    color: '#4CAF50',
-                    colorized: true,
                     timeoutAfter: 1000 * 60, // Swipe notification after ms
                     style: {
                         type: AndroidStyle.MESSAGING,

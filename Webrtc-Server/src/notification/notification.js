@@ -35,9 +35,12 @@ const sendDataOnlyNotification = async (token, data = {}) => {
             priority: 'high',
         },
         apns: {
+            headers: {
+                'apns-priority': '10',
+            },
             payload: {
                 aps: {
-                    'content-available': true,
+                    'content-available': 1,
                 },
             },
         },

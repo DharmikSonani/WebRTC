@@ -1,9 +1,11 @@
 import InCallManager from "react-native-incall-manager";
-import notifee, { AndroidCategory, AndroidImportance, AndroidStyle, AndroidVisibility } from '@notifee/react-native';
+import notifee, { AndroidCategory, AndroidImportance, AndroidVisibility } from '@notifee/react-native';
 import socketServices from "../../api/socketServices";
 import { Screens } from "../../routes/helper";
 import { Platform } from "react-native";
 import { sockets } from "../../api/helper";
+
+const profilePlaceholder = 'https://cdn-icons-png.flaticon.com/512/4433/4433850.png';
 
 export const useCallNotification = ({
     navigationRef,
@@ -29,7 +31,7 @@ export const useCallNotification = ({
 
             const data = remoteMessage?.data?.data && JSON.parse(remoteMessage?.data?.data);
 
-            const { from, to } = data;
+            const { username, profileImage } = data;
 
             if (Platform.OS == 'ios') {
                 await notifee.setNotificationCategories([
@@ -51,15 +53,15 @@ export const useCallNotification = ({
             }
 
             await notifee.displayNotification({
-                title: Platform.OS == 'android' ? `Incoming call` : from ?? 'WebRTC',
-                body: Platform.OS == 'android' ? 'Tap to answer' : `📹 Incoming video call`,
+                title: username ? username : 'WebRTC',
+                body: `📹 Incoming video call`,
                 ios: {
                     categoryId: 'incoming-call',
-                    attachments: [
-                        {
-                            url: 'https://img.freepik.com/premium-photo/high-quality-digital-image-wallpaper_783884-112874.jpg',
-                        },
-                    ],
+                    // attachments: [
+                    //     {
+                    //         url: profileImage ? profileImage : profilePlaceholder,
+                    //     },
+                    // ],
                 },
                 android: {
                     channelId,
@@ -71,24 +73,8 @@ export const useCallNotification = ({
                     autoCancel: false,
                     ongoing: false,
                     smallIcon: 'ic_video_call_icon',
+                    largeIcon: profileImage ? profileImage : profilePlaceholder, // User Profile Image
                     timeoutAfter: 1000 * 60, // Swipe notification after ms
-                    style: {
-                        type: AndroidStyle.MESSAGING,
-                        person: {
-                            name: to ?? 'WebRTC',
-                        },
-                        messages: [
-                            {
-                                text: '📹 Incoming video call',
-                                timestamp: Date.now(),
-                                person: {
-                                    name: from ?? 'WebRTC',
-                                    icon: 'https://img.freepik.com/premium-photo/high-quality-digital-image-wallpaper_783884-112874.jpg',
-                                    important: true,
-                                },
-                            },
-                        ],
-                    },
                     actions: [
                         {
                             title: `<p style="color: #4CAF50;"><b>Join</b></p>`,
@@ -128,10 +114,10 @@ export const useCallNotification = ({
 
             const data = remoteMessage?.data?.data && JSON.parse(remoteMessage?.data?.data);
 
-            const { from } = data;
+            const { username, profileImage } = data;
 
             await notifee.displayNotification({
-                title: from ?? 'WebRTC',
+                title: username ? username : 'WebRTC',
                 body: `Missed video call`,
                 android: {
                     channelId,
@@ -139,6 +125,7 @@ export const useCallNotification = ({
                     visibility: AndroidVisibility.PUBLIC,
                     showTimestamp: true,
                     category: AndroidCategory.CALL,
+                    largeIcon: profileImage ? profileImage : profilePlaceholder, // User Profile Image
                     lightUpScreen: true,
                     autoCancel: false,
                     ongoing: false,

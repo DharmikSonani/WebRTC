@@ -107,5 +107,8 @@ export const useNotification = ({
     // App Kill Mode Notification Press
     // messaging().getInitialNotification()?.then(async (remoteMessage) => { });
 
-    return {}
+    // Notification Permission
+    const requestNotificationPermission = async () => { await notifee.requestPermission() };
+
+    return { requestNotificationPermission, }
 };

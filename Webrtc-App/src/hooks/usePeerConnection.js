@@ -11,6 +11,7 @@ export const usePeerConnection = () => {
 
     // Setup Peer Connection
     const setupPeerConnection = () => {
+        // Only Work for same network provider
         const connection = new RTCPeerConnection({
             iceServers: [
                 {
@@ -22,8 +23,15 @@ export const usePeerConnection = () => {
                 {
                     urls: 'stun:stun2.l.google.com:19302',
                 },
+                {
+                    urls: 'stun:stun3.l.google.com:19302',
+                },
+                {
+                    urls: 'stun:stun4.l.google.com:19302',
+                },
             ],
         });
+
         peerConnection.current = connection;
     };
 

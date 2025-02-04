@@ -7,8 +7,8 @@ export const useDraggableXY = ({
     disabled,
     draggableMaxAreaX = 0, // draggableMaxAreaX = Total Width - Component Width (Include Padding / Margin) 
     draggableMaxAreaY = 0, // draggableMaxAreaY = Total Height - Component Height (Include Padding / Margin) 
-    bounceHorizontal,
-    bounceVertical,
+    bounceHorizontal = true,
+    bounceVertical = true,
     duration,
 }) => {
 
@@ -25,11 +25,7 @@ export const useDraggableXY = ({
         onPanResponderMove: (_, { dx, dy }) => {
             const newPositionX = initialPositionX.current + dx;
             const newPositionY = initialPositionY.current + dy;
-            newPositionX >= 0 &&
-                newPositionX <= draggableMaxAreaX &&
-                newPositionY >= 0 &&
-                newPositionY <= draggableMaxAreaY &&
-                drag.setValue({ x: newPositionX, y: newPositionY });
+            drag.setValue({ x: newPositionX, y: newPositionY });
         },
         onPanResponderRelease: (_, { dx, dy }) => {
             const newPositionX = initialPositionX.current + dx;

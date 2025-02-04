@@ -31,8 +31,13 @@ export const useWebrtcForVC = ({
     useEffect(() => {
         // Peer Connection (For Remote Stream)
         const pc = peerConnection.current;
-        pc && (pc.ontrack = (event) => { event.streams && event.streams[0] && setRemoteStream(event.streams[0]) });
-        pc && (pc.onicecandidate = (event) => { event.candidate && onIceCandidate(event.candidate) });
+        if (pc && pc != null) {
+            pc.ontrack = (event) => { event.streams && event.streams[0] && setRemoteStream(event.streams[0]) }
+            pc.onicecandidate = (event) => { event.candidate && onIceCandidate(event.candidate) }
+            pc.oniceconnectionstatechange = () => { console.log('ICE Connection State:', pc.iceConnectionState); }
+            pc.onconnectionstatechange = () => { console.log('Connection State:', pc.connectionState); }
+            pc.onsignalingstatechange = () => { console.log('Signaling State:', pc.signalingState); }
+        }
     }, [])
 
     useEffect(() => { !isFocus && cleanUpStream() }, [isFocus])

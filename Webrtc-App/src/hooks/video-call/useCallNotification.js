@@ -7,6 +7,11 @@ import { sockets } from "../../api/helper";
 
 const profilePlaceholder = 'https://cdn-icons-png.flaticon.com/512/4433/4433850.png';
 
+// List of screen which you want to avoid for video call
+const notAllowedScreensForCalling = [
+    Screens.VideoCallScreen,
+]
+
 export const useCallNotification = ({
     navigationRef,
     clearIncomingCallNotification = (channelId) => { console.log(`Initial clear incoming call notification: ${channelId}`); }
@@ -142,11 +147,15 @@ export const useCallNotification = ({
         if (data) {
             const { from, to, offer } = data;
             if (from && to && offer) {
-                navigationRef?.current?.navigate(Screens.VideoCallScreen, {
-                    localUserId: to,
-                    remoteUserId: from,
-                    offer: offer,
-                });
+                if (!notAllowedScreensForCalling.includes(navigationRef?.current?.getCurrentRoute()?.name)) {
+                    navigationRef?.current?.navigate(Screens.VideoCallScreen, {
+                        localUserId: to,
+                        remoteUserId: from,
+                        offer: offer,
+                    });
+                } else {
+                    console.log('Not able to connect.');
+                }
             }
         }
     };

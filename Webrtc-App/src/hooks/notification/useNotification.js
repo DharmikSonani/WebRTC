@@ -83,14 +83,13 @@ export const useNotification = ({
     notifee.onBackgroundEvent(async ({ type, detail }) => {
         if (type === EventType.ACTION_PRESS) {
             if (detail.pressAction?.id === 'accept') {
-                if (navigationRef?.current == null) {
-                    timeoutId && clearTimeout(timeoutId);
+                if (timeoutId) clearTimeout(timeoutId);
+                if (navigationRef?.current?.isReady()) {
+                    handleCallAccept(detail.notification?.data, detail.notification?.id);
+                } else {
                     timeoutId = setTimeout(() => {
-                        clearTimeout(timeoutId);
                         handleCallAccept(detail.notification?.data);
                     }, 1000);
-                } else {
-                    handleCallAccept(detail.notification?.data);
                 }
             } else if (detail.pressAction?.id === 'reject') {
                 handleCallReject(detail.notification?.data);

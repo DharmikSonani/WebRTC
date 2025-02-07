@@ -34,14 +34,14 @@ export const useNotification = ({
 
     // Filter notification based on type of notification received by backend
     const handleNotification = async (remoteMessage) => {
-        const data = remoteMessage?.data?.data && JSON.parse(remoteMessage?.data?.data);
+        const data = remoteMessage?.data;
 
         switch (data?.type) {
             case 'incoming-call':
-                await handleIncomingCallNotification(remoteMessage)
+                await handleIncomingCallNotification(data)
                 break;
             case 'miss-call':
-                await handleMissCallNotification(remoteMessage)
+                await handleMissCallNotification(data)
                 break;
             default:
                 break;

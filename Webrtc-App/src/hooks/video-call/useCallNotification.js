@@ -17,7 +17,7 @@ export const useCallNotification = ({
     clearIncomingCallNotification = (channelId) => { console.log(`Initial clear incoming call notification: ${channelId}`); }
 }) => {
 
-    const handleIncomingCallNotification = async (remoteMessage) => {
+    const handleIncomingCallNotification = async (data) => {
         try {
 
             InCallManager.stopRingtone();
@@ -33,8 +33,6 @@ export const useCallNotification = ({
                 importance: AndroidImportance.HIGH,
                 visibility: AndroidVisibility.PUBLIC,
             });
-
-            const data = remoteMessage?.data?.data && JSON.parse(remoteMessage?.data?.data);
 
             const { username, profileImage } = data;
 
@@ -94,14 +92,14 @@ export const useCallNotification = ({
                         },
                     ],
                 },
-                data: remoteMessage,
+                data: data,
             });
         } catch (error) {
             console.log(error);
         }
     };
 
-    const handleMissCallNotification = async (remoteMessage) => {
+    const handleMissCallNotification = async (data) => {
         try {
 
             InCallManager.stopRingtone();
@@ -116,8 +114,6 @@ export const useCallNotification = ({
                 importance: AndroidImportance.HIGH,
                 visibility: AndroidVisibility.PUBLIC,
             });
-
-            const data = remoteMessage?.data?.data && JSON.parse(remoteMessage?.data?.data);
 
             const { username, profileImage } = data;
 
@@ -141,17 +137,16 @@ export const useCallNotification = ({
         }
     };
 
-    const handleCallAccept = (remoteMessage) => {
+    const handleCallAccept = (data) => {
         InCallManager.stopRingtone();
-        const data = remoteMessage?.data?.data && JSON.parse(remoteMessage?.data?.data);
         if (data) {
-            const { from, to, offer } = data;
-            if (from && to && offer) {
+            const { _from, _to } = data;
+            if (_from && _to) {
                 if (!notAllowedScreensForCalling.includes(navigationRef?.current?.getCurrentRoute()?.name)) {
                     navigationRef?.current?.navigate(Screens.VideoCallScreen, {
-                        localUserId: to,
-                        remoteUserId: from,
-                        offer: offer,
+                        localUserId: _to,
+                        remoteUserId: _from,
+                        type: 'callee',
                     });
                 } else {
                     console.log('Not able to connect.');
@@ -160,13 +155,12 @@ export const useCallNotification = ({
         }
     };
 
-    const handleCallReject = (remoteMessage) => {
+    const handleCallReject = (data) => {
         InCallManager.stopRingtone();
-        const data = remoteMessage?.data?.data && JSON.parse(remoteMessage?.data?.data);
         if (data) {
-            const { from, to } = data;
+            const { _from, _to } = data;
             !socketServices?.socket?.connected && socketServices.initializeSocket();
-            socketServices.emit(sockets.VideoCall.hangup, { from: to, to: from });
+            socketServices.emit(sockets.VideoCall.declineCall, { _from: _to, _to: _from });
         }
     };
 

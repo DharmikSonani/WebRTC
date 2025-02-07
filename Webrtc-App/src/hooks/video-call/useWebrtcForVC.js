@@ -54,11 +54,13 @@ export const useWebrtcForVC = ({
             InCallManager.setSpeakerphoneOn(true);
             InCallManager.start({ media: 'video' });
 
-            const stream = await mediaDevices.getUserMedia({
+            const stream = localStream != null ? localStream : await mediaDevices.getUserMedia({
                 audio: true,
                 video: videoResolutions.UHD_8K,
             });
-            setLocalStream(stream);
+
+            localStream == null && setLocalStream(stream);
+
             peerConnection.current && stream.getTracks().length > 0 && stream.getTracks().forEach((track) => peerConnection.current.addTrack(track, stream));
             const offer = await peerConnection.current.createOffer();
 
@@ -79,9 +81,9 @@ export const useWebrtcForVC = ({
         }
     }
 
-    const handleCandidate = (remoteUser, data) => {
+    const handleCandidate = (data) => {
         try {
-            data?.from == remoteUser && data?.candidate && peerConnection.current.addIceCandidate(data.candidate);
+            data?.candidate && peerConnection.current.addIceCandidate(data.candidate);
         } catch (error) {
             console.log(`Handle Candidate Error: ${error}`)
         }
@@ -96,12 +98,12 @@ export const useWebrtcForVC = ({
             InCallManager.setKeepScreenOn(true);
             InCallManager.start({ media: 'video' });
 
-            const stream = await mediaDevices.getUserMedia({
+            const stream = localStream != null ? localStream : await mediaDevices.getUserMedia({
                 audio: true,
                 video: videoResolutions.UHD_8K,
             });
 
-            setLocalStream(stream);
+            localStream == null && setLocalStream(stream);
 
             stream.getTracks().forEach((track) => {
                 peerConnection.current.addTrack(track, stream);
@@ -150,6 +152,15 @@ export const useWebrtcForVC = ({
         }
     }
 
+    const startLocalStream = async () => {
+        const stream = await mediaDevices.getUserMedia({
+            audio: true,
+            video: videoResolutions.UHD_8K,
+        });
+
+        setLocalStream(stream);
+    }
+
     return {
         localStream,
         remoteStream,
@@ -166,5 +177,6 @@ export const useWebrtcForVC = ({
 
         handleAnswer,
         handleCandidate,
+        startLocalStream,
     }
 }

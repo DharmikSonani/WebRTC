@@ -2,7 +2,7 @@ import { Alert, Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View }
 import React, { useEffect } from 'react'
 import { RTCView } from 'react-native-webrtc';
 import socketServices from '../api/socketServices';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import DraggableView from '../components/DraggableView';
 import InCallManager from 'react-native-incall-manager';
 import { useFCM } from '../hooks/notification/useFCM';
@@ -15,30 +15,30 @@ const VideoCallScreen = () => {
 
     const route = useRoute();
     const navigation = useNavigation();
+    const isFocused = useIsFocused();
 
-    const { localUserId, remoteUserId } = route?.params;
-    const offer = route?.params?.offer;
+    const { localUserId, remoteUserId, type } = route?.params;
 
     const onCreateOffer = (offer) => {
         socketServices.emit(sockets.VideoCall.offer, {
-            from: localUserId,
-            to: remoteUserId,
+            _from: localUserId,
+            _to: remoteUserId,
             offer: offer,
         });
     }
 
     const onAnswerOffer = (answer) => {
         socketServices.emit(sockets.VideoCall.answer, {
-            from: localUserId,
-            to: remoteUserId,
+            _from: localUserId,
+            _to: remoteUserId,
             answer: answer,
         });
     }
 
     const onIceCandidate = (candidate) => {
         socketServices.emit(sockets.VideoCall.candidate, {
-            from: localUserId,
-            to: remoteUserId,
+            _from: localUserId,
+            _to: remoteUserId,
             candidate: candidate,
         });
     }
@@ -59,6 +59,7 @@ const VideoCallScreen = () => {
 
         handleAnswer,
         handleCandidate,
+        startLocalStream,
     } = useWebrtcForVC({
         onIceCandidate,
         onCreateOffer,
@@ -75,19 +76,30 @@ const VideoCallScreen = () => {
                 fcmToken: fcmToken ?? '',
             });
 
-            // socketServices.on(sockets.VideoCall.offer, handleIncomingCall);
             socketServices.on(sockets.VideoCall.answer, handleAnswer);
-            socketServices.on(sockets.VideoCall.candidate, (data) => { handleCandidate(remoteUserId, data) });
+            socketServices.on(sockets.VideoCall.candidate, handleCandidate);
             socketServices.on(sockets.VideoCall.hangup, handleRemoteHangup);
 
-            if (offer) {
-                onCallAccept({ offer });
+            if (type == 'callee') {
+                startLocalStream();
                 InCallManager.stopRingtone();
+                socketServices.emit(sockets.VideoCall.acceptCall, {
+                    _from: localUserId,
+                    _to: remoteUserId,
+                });
+                socketServices.on(sockets.VideoCall.offer, (data) => { onCallAccept({ offer: data?.offer }) });
+            }
+
+            if (type == 'caller') {
+                socketServices.on(sockets.VideoCall.acceptCall, onStartCall);
+                socketServices.on(sockets.VideoCall.declineCall, handleRemoteHangup);
             }
 
             return () => {
                 socketServices.emit(sockets.LeaveSocket, localUserId);
-                // socketServices.removeListener(sockets.VideoCall.offer);
+                socketServices.removeListener(sockets.VideoCall.acceptCall);
+                socketServices.removeListener(sockets.VideoCall.declineCall);
+                socketServices.removeListener(sockets.VideoCall.offer);
                 socketServices.removeListener(sockets.VideoCall.answer);
                 socketServices.removeListener(sockets.VideoCall.candidate);
                 socketServices.removeListener(sockets.VideoCall.hangup);
@@ -95,27 +107,19 @@ const VideoCallScreen = () => {
         }
     }, [fcmToken])
 
-    const onHangUpPress = () => {
+    useEffect(() => {
+        if (!isFocused) onHangUp();
+    }, [isFocused])
+
+    const onHangUp = () => {
         InCallManager.stopRingtone();
-        socketServices.emit(sockets.VideoCall.hangup, { from: localUserId, to: remoteUserId });
-        !callConnected && socketServices.emit(sockets.VideoCall.missCallNotification, { from: localUserId, to: remoteUserId });
+        socketServices.emit(sockets.VideoCall.hangup, { _from: localUserId, _to: remoteUserId });
+        if (!callConnected) socketServices.emit(sockets.VideoCall.missCallNotification, { _from: localUserId, _to: remoteUserId });
+    }
+
+    const onHangUpPress = () => {
         navigation.canGoBack() && navigation.goBack();
     };
-
-    const handleIncomingCall = (data) => {
-        InCallManager.startRingtone();
-        Alert.alert('Incoming Call', 'Accept the call?', [
-            {
-                text: 'Reject',
-                onPress: onHangUpPress,
-                style: 'cancel',
-            },
-            {
-                text: 'Accept',
-                onPress: () => { onCallAccept(data), InCallManager.stopRingtone(); },
-            },
-        ]);
-    }
 
     const handleRemoteHangup = () => {
         try {
@@ -124,6 +128,14 @@ const VideoCallScreen = () => {
         } catch (error) {
             console.log(`Handle Remote Hangup Error: ${error}`)
         }
+    }
+
+    const onSendCallRequest = () => {
+        startLocalStream();
+        socketServices.emit(sockets.VideoCall.incomingCallNotification, {
+            _from: localUserId,
+            _to: remoteUserId,
+        })
     }
 
     return (
@@ -189,7 +201,7 @@ const VideoCallScreen = () => {
                             </TouchableOpacity>
                         </>
                         :
-                        <TouchableOpacity style={styles.Button} onPress={onStartCall}>
+                        <TouchableOpacity style={styles.Button} onPress={onSendCallRequest}>
                             <Text style={styles.ButtonText}>Start</Text>
                         </TouchableOpacity>
                 }

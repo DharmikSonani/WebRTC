@@ -14,7 +14,7 @@ const sendPushNotification = async (token, data = {}, title = 'WebRTC', body = '
             body: body,
         },
         token: token,
-        data: { data: JSON.stringify(data) },
+        data: data,
     };
 
     try {
@@ -29,7 +29,7 @@ const sendPushNotification = async (token, data = {}, title = 'WebRTC', body = '
 // Only wakes app in background for frontend
 const sendDataOnlyNotification = async (token, data = {}) => {
     const message = {
-        data: { data: JSON.stringify(data) },
+        data: data,
         token: token,
         android: {
             priority: 'high',

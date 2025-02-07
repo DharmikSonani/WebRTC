@@ -30,49 +30,79 @@ function initializeSocket(server) {
       socket.leave(userId);
     });
 
-    // Broadcast offer to peer
-    socket.on('offer', async (data) => {
-      // console.log(`Offer : ${JSON.stringify(data)}`);
+    // ------------------------ For Video Call [Start] ------------------------
+
+    // Send Incoming Call Notification
+    socket.on('incoming-call-notification', async (data) => {
+      // console.log(`Incoming Call Notification : ${JSON.stringify(data)}`);
       const notificationData = {
-        username: data.from,
-        profileImage: userImages[data.from],
+        username: data._from,
+        profileImage: userImages[data._from],
         type: 'incoming-call',
         ...data,
       }
-      fcmTokens[data.to] != fcmTokens[data.from] ? (fcmTokens[data.to] && await sendDataOnlyNotification(fcmTokens[data.to], notificationData)) : delete fcmTokens[data.from];
-      io.to(data.to).emit('offer', { offer: data.offer, from: data.from });
-    });
 
-    // Broadcast answer to peer
-    socket.on('answer', (data) => {
-      // console.log(`Answer : ${JSON.stringify(data)}`);
-      io.to(data.to).emit('answer', { answer: data.answer, from: data.from });
-    });
+      fcmTokens[data._to] != fcmTokens[data._from] ? (fcmTokens[data._to] && await sendDataOnlyNotification(fcmTokens[data._to], notificationData)) : delete fcmTokens[data._from];
 
-    // Hangup Call
-    socket.on('hangup', (data) => {
-      // console.log(`Hang Up : ${JSON.stringify(data)}`);
-      io.to(data.to).emit('hangup', { from: data.from });
+      io.to(data._to).emit('incoming-call-notification', { data: notificationData });
     });
 
     // Miss Call Notification
     socket.on('miss-call-notification', async (data) => {
       // console.log(`Miss Call Notification: ${JSON.stringify(data)}`);
       const notificationData = {
-        username: data.from,
-        profileImage: userImages[data.from],
+        username: data._from,
+        profileImage: userImages[data._from],
         type: 'miss-call',
         ...data,
       }
-      fcmTokens[data.to] != fcmTokens[data.from] ? (fcmTokens[data.to] && await sendDataOnlyNotification(fcmTokens[data.to], notificationData)) : delete fcmTokens[data.from];
-      // io.to(data.to).emit('miss-call-notification', { from: data.from });
+
+      fcmTokens[data._to] != fcmTokens[data._from] ? (fcmTokens[data._to] && await sendDataOnlyNotification(fcmTokens[data._to], notificationData)) : delete fcmTokens[data._from];
+
+      io.to(data._to).emit('miss-call-notification', { data: notificationData });
+    });
+
+    // Accept Call
+    socket.on('accept-call', async (data) => {
+      // console.log(`Accept Call : ${JSON.stringify(data)}`);
+      io.to(data._to).emit('accept-call', data);
+    });
+
+    // Decline Call
+    socket.on('decline-call', async (data) => {
+      // console.log(`Decline Call : ${JSON.stringify(data)}`);
+      io.to(data._to).emit('decline-call', data);
+    });
+
+    // ------------------------ For Video Call [End] ------------------------
+
+    // ------------------------ For WebRTC [Start] ------------------------
+
+    // Broadcast offer to peer
+    socket.on('offer', async (data) => {
+      // console.log(`Offer : ${JSON.stringify(data)}`);
+      io.to(data._to).emit('offer', data);
+    });
+
+    // Broadcast answer to peer
+    socket.on('answer', (data) => {
+      // console.log(`Answer : ${JSON.stringify(data)}`);
+      io.to(data._to).emit('answer', data);
+    });
+
+    // Hangup Call
+    socket.on('hangup', (data) => {
+      // console.log(`Hang Up : ${JSON.stringify(data)}`);
+      io.to(data._to).emit('hangup', data);
     });
 
     // Handle ICE candidate
     socket.on('candidate', (data) => {
       // console.log(`Candidate : ${JSON.stringify(data)}`);
-      io.to(data.to).emit('candidate', { candidate: data.candidate, from: data.from });
+      io.to(data._to).emit('candidate', data);
     });
+
+    // ------------------------ For WebRTC [End] ------------------------
 
     socket.on('disconnect', () => {
       console.log(`User disconnected: ${socket.id}`);

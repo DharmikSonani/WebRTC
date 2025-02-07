@@ -16,6 +16,7 @@ const JoinCallScreen = () => {
         navigation.navigate(Screens.VideoCallScreen, {
             localUserId: currentUserId.trim(),
             remoteUserId: remoteUserId.trim(),
+            type: 'caller',
         });
     }
 

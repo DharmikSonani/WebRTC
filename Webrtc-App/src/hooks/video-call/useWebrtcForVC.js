@@ -26,6 +26,7 @@ export const useWebrtcForVC = ({
     const [isBigScaleLocalView, setIsBigScaleLocalView] = useState(false);
     const [micEnable, setMicEnable] = useState(true);
     const [speakerEnable, setSpeakerEnable] = useState(true);
+    const [cameraEnable, setCameraEnable] = useState(true);
 
     // useEffect
     useEffect(() => {
@@ -54,11 +55,13 @@ export const useWebrtcForVC = ({
             InCallManager.setSpeakerphoneOn(true);
             InCallManager.start({ media: 'video' });
 
-            const stream = await mediaDevices.getUserMedia({
+            const stream = localStream != null ? localStream : await mediaDevices.getUserMedia({
                 audio: true,
                 video: videoResolutions.UHD_8K,
             });
-            setLocalStream(stream);
+
+            localStream == null && setLocalStream(stream);
+
             peerConnection.current && stream.getTracks().length > 0 && stream.getTracks().forEach((track) => peerConnection.current.addTrack(track, stream));
             const offer = await peerConnection.current.createOffer();
 
@@ -79,9 +82,9 @@ export const useWebrtcForVC = ({
         }
     }
 
-    const handleCandidate = (remoteUser, data) => {
+    const handleCandidate = (data) => {
         try {
-            data?.from == remoteUser && data?.candidate && peerConnection.current.addIceCandidate(data.candidate);
+            data?.candidate && peerConnection.current.addIceCandidate(data.candidate);
         } catch (error) {
             console.log(`Handle Candidate Error: ${error}`)
         }
@@ -96,12 +99,12 @@ export const useWebrtcForVC = ({
             InCallManager.setKeepScreenOn(true);
             InCallManager.start({ media: 'video' });
 
-            const stream = await mediaDevices.getUserMedia({
+            const stream = localStream != null ? localStream : await mediaDevices.getUserMedia({
                 audio: true,
                 video: videoResolutions.UHD_8K,
             });
 
-            setLocalStream(stream);
+            localStream == null && setLocalStream(stream);
 
             stream.getTracks().forEach((track) => {
                 peerConnection.current.addTrack(track, stream);
@@ -150,6 +153,33 @@ export const useWebrtcForVC = ({
         }
     }
 
+    const onToggleCamera = async () => {
+        setCameraEnable(pre => !pre);
+        const videoTrack = localStream.getVideoTracks()[0];
+        videoTrack && (videoTrack.enabled = !videoTrack.enabled)
+    }
+
+    const onSwitchCameraMode = async () => {
+        try {
+            const videoTrack = localStream?.getVideoTracks()[0];
+
+            if (videoTrack && videoTrack.getSettings().facingMode) {
+                await videoTrack.applyConstraints({ facingMode: videoTrack.getSettings().facingMode === 'user' ? 'environment' : 'user', });
+            }
+        } catch (error) {
+            console.log("Error switching camera:", error);
+        }
+    }
+
+    const startLocalStream = async () => {
+        const stream = await mediaDevices.getUserMedia({
+            audio: true,
+            video: videoResolutions.UHD_8K,
+        });
+
+        setLocalStream(stream);
+    }
+
     return {
         localStream,
         remoteStream,
@@ -157,14 +187,18 @@ export const useWebrtcForVC = ({
         isBigScaleLocalView,
         micEnable,
         speakerEnable,
+        cameraEnable,
 
         onStartCall,
         onCallAccept,
         onViewScaleChange,
         onToggleMic,
         onToggleSpeaker,
+        onToggleCamera,
+        onSwitchCameraMode,
 
         handleAnswer,
         handleCandidate,
+        startLocalStream,
     }
 }

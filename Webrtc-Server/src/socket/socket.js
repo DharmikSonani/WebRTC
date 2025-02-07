@@ -27,25 +27,25 @@ function initializeSocket(server) {
     // Broadcast offer to peer
     socket.on('offer', (data) => {
       console.log(`Offer : ${JSON.stringify(data)}`)
-      io.to(data.to).emit('offer', { offer: data.offer, from: data.from });
+      io.to(data.to).emit('offer', data);
     });
 
     // Broadcast answer to peer
     socket.on('answer', (data) => {
       console.log(`Answer : ${JSON.stringify(data)}`)
-      io.to(data.to).emit('answer', { answer: data.answer, from: data.from });
+      io.to(data.to).emit('answer', data);
     });
 
     // Hangup Call
     socket.on('hangup', (data) => {
       console.log(`Hang Up : ${JSON.stringify(data)}`)
-      io.to(data.to).emit('hangup', { from: data.from });
+      io.to(data.to).emit('hangup', data);
     });
 
     // Handle ICE candidate
     socket.on('candidate', (data) => {
       console.log(`Candidate : ${JSON.stringify(data)}`)
-      io.to(data.to).emit('candidate', { candidate: data.candidate, from: data.from });
+      io.to(data.to).emit('candidate', data);
     });
 
     socket.on('disconnect', () => {

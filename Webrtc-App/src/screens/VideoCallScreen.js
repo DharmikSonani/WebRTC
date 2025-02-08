@@ -50,6 +50,7 @@ const VideoCallScreen = () => {
         isBigScaleLocalView,
         micEnable,
         speakerEnable,
+        frontCameraMode,
 
         onStartCall,
         onCallAccept,
@@ -148,7 +149,7 @@ const VideoCallScreen = () => {
                                 streamURL={isBigScaleLocalView ? localStream.toURL() : remoteStream.toURL()}
                                 style={styles.RTCViewStyle}
                                 objectFit="cover"
-                                mirror={true}
+                                mirror={isBigScaleLocalView ? frontCameraMode : false}
                             />
                         </View>
                         <View style={styles.LocalViewContainer}>
@@ -168,7 +169,7 @@ const VideoCallScreen = () => {
                                         streamURL={isBigScaleLocalView ? remoteStream.toURL() : localStream.toURL()}
                                         style={styles.RTCViewStyle}
                                         objectFit="cover"
-                                        mirror={true}
+                                        mirror={isBigScaleLocalView ? false : frontCameraMode}
                                     />
                                 </TouchableOpacity>
                             </DraggableView>
@@ -181,7 +182,7 @@ const VideoCallScreen = () => {
                             streamURL={localStream.toURL()}
                             style={styles.RTCViewStyle}
                             objectFit="cover"
-                            mirror={true}
+                            mirror={frontCameraMode}
                         />
                     </View>
             }

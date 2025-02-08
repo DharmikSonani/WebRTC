@@ -27,6 +27,7 @@ export const useWebrtcForVC = ({
     const [micEnable, setMicEnable] = useState(true);
     const [speakerEnable, setSpeakerEnable] = useState(true);
     const [cameraEnable, setCameraEnable] = useState(true);
+    const [frontCameraMode, setFrontCameraMode] = useState(true);
 
     // useEffect
     useEffect(() => {
@@ -145,28 +146,19 @@ export const useWebrtcForVC = ({
     }
 
     const toggleAudio = (stream) => {
-        if (stream) {
-            const audioTrack = stream.getAudioTracks()[0];
-            audioTrack && (audioTrack.enabled = !audioTrack.enabled)
-        }
+        if (stream) stream?.getAudioTracks()?.forEach(track => { track.enabled = !track.enabled });
     }
 
     const onToggleCamera = async () => {
         setCameraEnable(pre => !pre);
-        const videoTrack = localStream.getVideoTracks()[0];
-        videoTrack && (videoTrack.enabled = !videoTrack.enabled)
+        if (localStream) localStream?.getVideoTracks()?.forEach(track => { track.enabled = !track.enabled });
     }
 
     const onSwitchCameraMode = async () => {
-        try {
-            const videoTrack = localStream?.getVideoTracks()[0];
-
-            if (videoTrack && videoTrack.getSettings().facingMode) {
-                await videoTrack.applyConstraints({ facingMode: videoTrack.getSettings().facingMode === 'user' ? 'environment' : 'user', });
-            }
-        } catch (error) {
-            console.log("Error switching camera:", error);
-        }
+        if (localStream) {
+            localStream?.getVideoTracks()?.forEach(track => { track._switchCamera(); })
+            if (cameraEnable) setFrontCameraMode(pre => !pre);
+        };
     }
 
     return {
@@ -177,6 +169,7 @@ export const useWebrtcForVC = ({
         micEnable,
         speakerEnable,
         cameraEnable,
+        frontCameraMode,
 
         onStartCall,
         onCallAccept,

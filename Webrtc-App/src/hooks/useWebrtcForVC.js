@@ -26,6 +26,7 @@ export const useWebrtcForVC = ({
     const [isBigScaleLocalView, setIsBigScaleLocalView] = useState(false);
     const [micEnable, setMicEnable] = useState(true);
     const [speakerEnable, setSpeakerEnable] = useState(true);
+    const [cameraEnable, setCameraEnable] = useState(true);
 
     // useEffect
     useEffect(() => {
@@ -150,6 +151,24 @@ export const useWebrtcForVC = ({
         }
     }
 
+    const onToggleCamera = async () => {
+        setCameraEnable(pre => !pre);
+        const videoTrack = localStream.getVideoTracks()[0];
+        videoTrack && (videoTrack.enabled = !videoTrack.enabled)
+    }
+
+    const onSwitchCameraMode = async () => {
+        try {
+            const videoTrack = localStream?.getVideoTracks()[0];
+
+            if (videoTrack && videoTrack.getSettings().facingMode) {
+                await videoTrack.applyConstraints({ facingMode: videoTrack.getSettings().facingMode === 'user' ? 'environment' : 'user', });
+            }
+        } catch (error) {
+            console.log("Error switching camera:", error);
+        }
+    }
+
     return {
         localStream,
         remoteStream,
@@ -157,12 +176,15 @@ export const useWebrtcForVC = ({
         isBigScaleLocalView,
         micEnable,
         speakerEnable,
+        cameraEnable,
 
         onStartCall,
         onCallAccept,
         onViewScaleChange,
         onToggleMic,
         onToggleSpeaker,
+        onToggleCamera,
+        onSwitchCameraMode,
 
         handleAnswer,
         handleCandidate,

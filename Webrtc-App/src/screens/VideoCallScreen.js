@@ -70,7 +70,7 @@ const VideoCallScreen = () => {
 
         socketServices.on(sockets.VideoCall.offer, handleIncomingCall);
         socketServices.on(sockets.VideoCall.answer, handleAnswer);
-        socketServices.on(sockets.VideoCall.candidate, (data) => { handleCandidate(remoteUserId, data) });
+        socketServices.on(sockets.VideoCall.candidate, handleCandidate);
         socketServices.on(sockets.VideoCall.hangup, handleRemoteHangup);
 
         return () => {

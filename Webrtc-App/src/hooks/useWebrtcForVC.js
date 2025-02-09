@@ -81,9 +81,9 @@ export const useWebrtcForVC = ({
         }
     }
 
-    const handleCandidate = (remoteUser, data) => {
+    const handleCandidate = (data) => {
         try {
-            data?.from == remoteUser && data?.candidate && peerConnection.current.addIceCandidate(data.candidate);
+            data?.candidate && peerConnection.current.addIceCandidate(data.candidate);
         } catch (error) {
             console.log(`Handle Candidate Error: ${error}`)
         }

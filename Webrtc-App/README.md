@@ -687,7 +687,7 @@ const styles = StyleSheet.create({
 
 - **UI Elements:**
   - **RTCView Components:** Display the local and remote video streams using `RTCView`.
-  - **Draggable Local View:** The local video view can be dragged around the screen using `DraggableView`.
+  - **Draggable Local View:** The local video view can be dragged around the screen using [`DraggableView`](https://github.com/DharmikSonani/WebRTC/blob/Basic/Webrtc-App/src/components/DraggableView.js).
   - **Call Control Buttons:** Buttons for toggling microphone, speaker, and ending the call. The buttons change their appearance based on the current state (enabled/disabled).
 
 - **Style:** 

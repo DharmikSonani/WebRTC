@@ -1,4 +1,4 @@
-# WebRTC Video Call App
+# WebRTC Video Call App - Basic
 
 ## Backend Setup - Node JS
 

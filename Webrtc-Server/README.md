@@ -1,6 +1,6 @@
 # WebRTC Video Call App
 
-## Backend Setup - Node JS
+## Backend Setup
 
 This document outlines the setup and implementation of the backend for the WebRTC-based video calling application.
 

@@ -1,17 +1,19 @@
-# WebRTC Video Call App - Frontend Setup
+# WebRTC Video Call App
+
+## Frontend Setup
 
 This document outlines the setup and implementation of the frontend for the WebRTC-based video calling application.
 
-## Required Dependencies
+### Required Dependencies
 
 - [react-native-webrtc](https://github.com/react-native-webrtc/react-native-webrtc) - WebRTC implementation for React Native
 - [socket.io-client](https://www.npmjs.com/package/socket.io-client) - Client-side WebSocket library
 - [react-native-incall-manager](https://github.com/react-native-webrtc/react-native-incall-manager) - Manages audio/video call settings
 - [react-native-permissions](https://www.npmjs.com/package/react-native-permissions) - Handles runtime permissions for accessing the microphone and camera on both Android and iOS
 
-## Code Implementation
+### Code Implementation
 
-### File: `src/hooks/useVideoCallPermissions.js`
+#### File: `src/hooks/useVideoCallPermissions.js`
 ```javascript
 import { useState, useEffect } from 'react';
 import { Platform, PermissionsAndroid } from 'react-native';
@@ -62,7 +64,7 @@ const useVideoCallPermissions = () => {
 export default useVideoCallPermissions;
 ```
 
-### File: `src/hooks/usePeerConnection.js`
+#### File: `src/hooks/usePeerConnection.js`
 ```javascript
 import { useEffect, useRef } from 'react';
 import { RTCPeerConnection } from 'react-native-webrtc';
@@ -117,7 +119,7 @@ export const usePeerConnection = () => {
 };
 ```
 
-### File: `src/hooks/useWebrtcForVC.js`
+#### File: `src/hooks/useWebrtcForVC.js`
 ```javascript
 import { useEffect, useState } from "react";
 import useVideoCallPermissions from "./useVideoCallPermissions";
@@ -350,7 +352,7 @@ export const useWebrtcForVC = ({
 }
 ```
 
-### File: `src/screens/VideoCallScreen.js`
+#### File: `src/screens/VideoCallScreen.js`
 ```javascript
 import { Alert, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect } from 'react'

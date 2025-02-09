@@ -1,14 +1,16 @@
-# WebRTC Video Call App - Backend Setup
+# WebRTC Video Call App
+
+## Backend Setup
 
 This document outlines the setup and implementation of the backend for the WebRTC-based video calling application.
 
-## Required Dependencies
+### Required Dependencies
 
 - [Socket.io](https://www.npmjs.com/package/socket.io) - Real-time bidirectional event-based communication
 
-## Code Implementation
+### Code Implementation
 
-### File: `src/socket/socket.js`
+#### File: `src/socket/socket.js`
 ```javascript
 const { Server } = require('socket.io');
 
@@ -64,7 +66,7 @@ function initializeSocket(server) {
 module.exports = initializeSocket;
 ```
 
-## Explanation
+#### Explanation
 - Establishes a WebSocket connection using `socket.io`.
 - Handles joining and leaving of sockets.
 - Facilitates WebRTC signaling by emitting `offer`, `answer`, `hangup`, and `candidate` events.

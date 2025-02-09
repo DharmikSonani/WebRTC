@@ -8,9 +8,7 @@ This document outlines the setup and implementation of the backend for the WebRT
 
 - [Socket.io](https://www.npmjs.com/package/socket.io) - Real-time bidirectional event-based communication
 
-### Code Implementation
-
-#### File: `src/socket/socket.js`
+#### Code Implementation : `src/socket/socket.js`
 ```javascript
 const { Server } = require('socket.io');
 

@@ -24,33 +24,39 @@ function initializeSocket(server) {
   io.on('connection', (socket) => {
     console.log(`User connected: ${socket.id}`);
 
+    // Join Socket
     socket.on('join-socket', (userID) => {
       console.log(`Join Socket: ${userID}`);
       socket.join(userID);
     });
 
+    // Leave Socket
     socket.on('leave-socket', (userID) => {
       console.log(`Leave Socket: ${userID}`);
       socket.leave(userID);
     });
 
+    // Broadcast offer to peer
     socket.on('offer', (data) => {
-      console.log(`Offer : ${JSON.stringify(data)}`);
+      console.log(`Offer : ${JSON.stringify(data)}`)
       io.to(data.to).emit('offer', data);
     });
 
+    // Broadcast answer to peer
     socket.on('answer', (data) => {
-      console.log(`Answer : ${JSON.stringify(data)}`);
+      console.log(`Answer : ${JSON.stringify(data)}`)
       io.to(data.to).emit('answer', data);
     });
 
+    // Hangup Call
     socket.on('hangup', (data) => {
-      console.log(`Hang Up : ${JSON.stringify(data)}`);
+      console.log(`Hang Up : ${JSON.stringify(data)}`)
       io.to(data.to).emit('hangup', data);
     });
 
+    // Handle ICE candidate
     socket.on('candidate', (data) => {
-      console.log(`Candidate : ${JSON.stringify(data)}`);
+      console.log(`Candidate : ${JSON.stringify(data)}`)
       io.to(data.to).emit('candidate', data);
     });
 
@@ -59,6 +65,7 @@ function initializeSocket(server) {
     });
   });
   return io;
+
 }
 
 module.exports = initializeSocket;

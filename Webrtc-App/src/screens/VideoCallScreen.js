@@ -1,5 +1,5 @@
-import { Alert, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useEffect } from 'react'
+import { Alert, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect } from 'react';
 import { RTCView } from 'react-native-webrtc';
 import socketServices from '../api/socketServices';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -11,12 +11,12 @@ import { sockets } from '../api/helper';
 const { width, height } = Dimensions.get('screen');
 
 const VideoCallScreen = () => {
-
     const route = useRoute();
     const navigation = useNavigation();
 
     const { localUserId, remoteUserId } = route?.params;
 
+    // Socket events for video call signaling
     const onCreateOffer = (offer) => {
         socketServices.emit(sockets.VideoCall.offer, {
             from: localUserId,
@@ -49,13 +49,11 @@ const VideoCallScreen = () => {
         micEnable,
         speakerEnable,
         frontCameraMode,
-
         onStartCall,
         onCallAccept,
         onViewScaleChange,
         onToggleMic,
         onToggleSpeaker,
-
         handleAnswer,
         handleCandidate,
     } = useWebrtcForVC({
@@ -64,10 +62,9 @@ const VideoCallScreen = () => {
         onAnswerOffer,
     });
 
-    // Socket
+    // Socket communication setup
     useEffect(() => {
         socketServices.emit(sockets.JoinSocket, localUserId);
-
         socketServices.on(sockets.VideoCall.offer, handleIncomingCall);
         socketServices.on(sockets.VideoCall.answer, handleAnswer);
         socketServices.on(sockets.VideoCall.candidate, handleCandidate);
@@ -79,15 +76,17 @@ const VideoCallScreen = () => {
             socketServices.removeListener(sockets.VideoCall.answer);
             socketServices.removeListener(sockets.VideoCall.candidate);
             socketServices.removeListener(sockets.VideoCall.hangup);
-        }
-    }, [])
+        };
+    }, []);
 
+    // Handle hangup action
     const onHangUpPress = () => {
         InCallManager.stopRingtone();
         socketServices.emit(sockets.VideoCall.hangup, { from: localUserId, to: remoteUserId });
         navigation.canGoBack() && navigation.goBack();
     };
 
+    // Handle incoming call alert
     const handleIncomingCall = (data) => {
         InCallManager.startRingtone();
         Alert.alert('Incoming Call', 'Accept the call?', [
@@ -103,6 +102,7 @@ const VideoCallScreen = () => {
         ]);
     }
 
+    // Handle remote user hangup
     const handleRemoteHangup = () => {
         try {
             Alert.alert('Call Ended', 'Call has been ended.');
@@ -184,7 +184,7 @@ const VideoCallScreen = () => {
     )
 }
 
-export default VideoCallScreen
+export default VideoCallScreen;
 
 const styles = StyleSheet.create({
     Container: {
@@ -241,4 +241,4 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '800',
     },
-})
+});

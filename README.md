@@ -1,310 +1,125 @@
-# WebSocket Real-Time Communication Backend
+# WebRTC Video Call App
 
-This repository provides the backend implementation of a real-time communication server using WebSockets with the help of `Socket.io`. It supports user connections, joining/leaving rooms, and broadcasting WebRTC signaling events (offers, answers, ICE candidates, and hangups) for peer-to-peer communications.
+## Backend Setup - Node JS
 
-## Features
+This document outlines the setup and implementation of the backend for the WebRTC-based video calling application.
 
-- **Real-time communication** using WebSockets.
-- **User room management**: users can join and leave rooms.
-- **WebRTC signaling**: Broadcast WebRTC offers, answers, ICE candidates, and handle hangups.
-- **Connection management**: Logging when users connect or disconnect from the server.
+### Required Dependencies
 
-## Socket Events
+- [Socket.io](https://www.npmjs.com/package/socket.io) - Real-time bidirectional event-based communication
 
-The server listens for and broadcasts the following events:
-
-### `JoinSocket`
-- **Purpose**: Allows a user to join a socket room identified by their `userID`.
-- **Example**:
-  ```javascript
-  socket.emit('JoinSocket', userID);
-  ```
-
-### `LeaveSocket`
-- **Purpose**: Allows a user to leave a socket room identified by their `userID`.
-- **Example**:
-  ```javascript
-  socket.emit('LeaveSocket', userID);
-  ```
-
-### `offer`
-- **Purpose**: Broadcasts a WebRTC offer to a peer.
-- **Example**:
-  ```javascript
-  socket.emit('offer', { to: peerID, offer: offerDetails, from: userID });
-  ```
-
-### `answer`
-- **Purpose**: Broadcasts a WebRTC answer to a peer.
-- **Example**:
-  ```javascript
-  socket.emit('answer', { to: peerID, answer: answerDetails, from: userID });
-  ```
-
-### `hangup`
-- **Purpose**: Sends a hangup signal to a peer, indicating the call has ended.
-- **Example**:
-  ```javascript
-  socket.emit('hangup', { to: peerID, from: userID });
-  ```
-
-### `candidate`
-- **Purpose**: Broadcasts an ICE candidate to a peer during WebRTC negotiations.
-- **Example**:
-  ```javascript
-  socket.emit('candidate', { to: peerID, candidate: candidateDetails, from: userID });
-  ```
-
-## Code Explanation
-
-### `initializeSocket(server)`
-- **Purpose**: Initializes the WebSocket server with the provided HTTP server and sets up event listeners.
-- **Parameters**: 
-  - `server`: The HTTP server instance (e.g., from `express` or `http`).
-- **Returns**: The `io` instance of the WebSocket server.
-
-### Event Handlers
-1. **`connection`**: 
-   - Logs when a user connects and listens for various events like `JoinSocket`, `LeaveSocket`, `offer`, `answer`, `hangup`, and `candidate`.
-   
-2. **`JoinSocket`**:
-   - Adds the user to a room identified by their `userID`.
-
-3. **`LeaveSocket`**:
-   - Removes the user from their specific room.
-
-4. **`offer`**:
-   - Broadcasts a WebRTC offer to the target peer.
-
-5. **`answer`**:
-   - Broadcasts a WebRTC answer to the originating peer.
-
-6. **`hangup`**:
-   - Sends a hangup event to notify the peer the call has ended.
-
-7. **`candidate`**:
-   - Sends ICE candidates to the peer for WebRTC negotiation.
-
-8. **`disconnect`**:
-   - Logs when a user disconnects from the WebSocket server.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
-
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-# 1. `usePeerConnection` WebRTC Peer Connection Hook Setup Guide
-
-## Overview
-This guide explains how to use the `usePeerConnection` hook to manage a WebRTC peer connection in a React Native application. The hook sets up a peer connection with ICE servers and provides methods for creating, managing, and closing the connection.
-
-## Prerequisites
-Before you start using this hook, ensure the following dependencies are installed:
-
-1. **React Native** - For building your mobile application.
-2. **react-native-webrtc** - A package for implementing WebRTC functionalities in React Native.
-
-### Install Dependencies
-
-```bash
-npm install react-native-webrtc
-```
-
-## How the Hook Works
-
-The `usePeerConnection` hook handles the creation and cleanup of the WebRTC peer connection. It uses `RTCPeerConnection` from the `react-native-webrtc` package to manage the connection lifecycle, including ICE server setup.
-
-### Hook Implementation
-
-The hook provides the following functionalities:
-
-- **Setup of Peer Connection**
-- **Close Peer Connection**
-- **Ref Access to Peer Connection**
-
-### Code Breakdown
-
+#### Code Implementation : `src/socket/socket.js`
 ```javascript
-import { useEffect, useRef } from 'react';
-import { RTCPeerConnection } from 'react-native-webrtc';
+const { Server } = require('socket.io');
 
-export const usePeerConnection = () => {
-    const peerConnection = useRef(null); // Reference to hold the peer connection
+let io;
 
-    useEffect(() => {
-        setupPeerConnection(); // Initialize peer connection on mount
-        return () => { closePeerConnection(); }; // Cleanup on unmount
-    }, []);
+function initializeSocket(server) {
+  io = new Server(server, {
+    cors: {
+      origin: '*',
+    }
+  });
 
-    // Setup Peer Connection
-    const setupPeerConnection = () => {
-        const connection = new RTCPeerConnection({
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' },
-            ],
-        });
-        peerConnection.current = connection; // Save peer connection reference
-    };
+  io.on('connection', (socket) => {
+    console.log(`User connected: ${socket.id}`);
 
-    // Close Peer Connection
-    const closePeerConnection = () => {
-        if (peerConnection.current) {
-            peerConnection.current.close(); // Close the connection
-            peerConnection.current = null; // Clear the reference
-        }
-    };
-
-    return {
-        peerConnection, // Provides reference to the peer connection
-        setupPeerConnection, // Method to manually setup the connection
-        closePeerConnection, // Method to manually close the connection
-    };
-};
-```
-
-### Key Features
-
-1. **`peerConnection` (Ref)**: A reference to the `RTCPeerConnection` instance. It can be used to access the peer connection object in other parts of the code.
-2. **`setupPeerConnection`**: Initializes a new `RTCPeerConnection` with predefined ICE servers for STUN (Session Traversal Utilities for NAT). This allows the WebRTC client to connect to the remote peer.
-3. **`closePeerConnection`**: Closes the peer connection and clears the reference when the component is unmounted.
-
-### ICE Servers Configuration
-
-The `usePeerConnection` hook uses Google’s publicly available STUN servers:
-
-```json
-{
-    "urls": [
-        "stun:stun.l.google.com:19302",
-        "stun:stun1.l.google.com:19302",
-        "stun:stun2.l.google.com:19302"
-    ]
-}
-```
-
-These STUN servers are used for NAT (Network Address Translation) traversal, helping peers find each other and establish a direct connection.
-
-## How to Use the Hook
-
-### 1. Import the Hook
-
-To use the hook in your component, import it as shown below:
-
-```javascript
-import { usePeerConnection } from './path-to-your-hook';
-```
-
-### 2. Initialize Peer Connection in Your Component
-
-You can now use the hook in any functional component to handle peer connection creation and cleanup:
-
-```javascript
-import React, { useEffect } from 'react';
-import { usePeerConnection } from './path-to-your-hook';
-
-const VideoCallComponent = () => {
-    const { peerConnection, setupPeerConnection, closePeerConnection } = usePeerConnection();
-
-    useEffect(() => {
-        // Example: Use peerConnection for signaling or data transfer
-        if (peerConnection.current) {
-            console.log('Peer connection established:', peerConnection.current);
-        }
-
-        // Cleanup on unmount
-        return () => {
-            closePeerConnection(); // Ensure the connection is closed when component unmounts
-        };
-    }, [peerConnection]);
-
-    return (
-        <View>
-            <Text>Video Call</Text>
-            {/* Additional UI elements for video call */}
-        </View>
-    );
-};
-
-export default VideoCallComponent;
-```
-
-### 3. Accessing Peer Connection
-
-You can access the `peerConnection` ref to interact with the connection object directly (e.g., adding tracks, creating offers/answers):
-
-```javascript
-if (peerConnection.current) {
-    peerConnection.current.addTrack(localStream.getTracks()[0], localStream);
-}
-```
-
-### 4. Cleanup on Component Unmount
-
-The hook automatically cleans up the peer connection when the component is unmounted or when the peer connection is no longer needed:
-
-```javascript
-useEffect(() => {
-    return () => {
-        closePeerConnection(); // Automatically closes the peer connection on unmount
-    };
-}, []);
-```
-
-## Customization
-
-You can customize the ICE server configuration by passing your own list of STUN/TURN servers:
-
-```javascript
-const setupPeerConnection = () => {
-    const connection = new RTCPeerConnection({
-        iceServers: [
-            { urls: 'stun:your-custom-stun-server.com:19302' },
-            { urls: 'turn:your-turn-server.com:3478', username: 'user', credential: 'password' },
-        ],
+    // Join Socket
+    socket.on('join-socket', (userID) => {
+      console.log(`Join Socket: ${userID}`);
+      socket.join(userID);
     });
-    peerConnection.current = connection;
-};
+
+    // Leave Socket
+    socket.on('leave-socket', (userID) => {
+      console.log(`Leave Socket: ${userID}`);
+      socket.leave(userID);
+    });
+
+    // Broadcast offer to peer
+    socket.on('offer', (data) => {
+      console.log(`Offer : ${JSON.stringify(data)}`)
+      io.to(data.to).emit('offer', data);
+    });
+
+    // Broadcast answer to peer
+    socket.on('answer', (data) => {
+      console.log(`Answer : ${JSON.stringify(data)}`)
+      io.to(data.to).emit('answer', data);
+    });
+
+    // Hangup Call
+    socket.on('hangup', (data) => {
+      console.log(`Hang Up : ${JSON.stringify(data)}`)
+      io.to(data.to).emit('hangup', data);
+    });
+
+    // Handle ICE candidate
+    socket.on('candidate', (data) => {
+      console.log(`Candidate : ${JSON.stringify(data)}`)
+      io.to(data.to).emit('candidate', data);
+    });
+
+    socket.on('disconnect', () => {
+      console.log(`User disconnected: ${socket.id}`);
+    });
+  });
+  return io;
+
+}
+
+module.exports = initializeSocket;
 ```
 
-## Troubleshooting
+#### Explanation
+- Establishes a WebSocket connection using `socket.io`.
+- Handles joining and leaving of sockets.
+- Facilitates WebRTC signaling by emitting `offer`, `answer`, `hangup`, and `candidate` events.
+- Cleans up on user disconnect.
 
-- **Connection Issues**: If the connection is not being established, check if the STUN server is accessible. If you're behind a strict firewall, consider setting up a TURN server.
-- **ICE Candidate Collection**: You may need to listen to the `onicecandidate` event on the `peerConnection` object to handle candidates for establishing the connection.
+------
 
-## Conclusion
+## Frontend Setup - React Native
 
-With this setup, the `usePeerConnection` hook simplifies the process of managing a WebRTC peer connection. It abstracts the complexity of setting up and cleaning up the peer connection, making it easy to integrate into your React Native application.
+This document outlines the setup and implementation of the frontend for the WebRTC-based video calling application.
 
---------------------------------------------------------------------------------------------------------------------------------------------
+### Required Dependencies
 
-# 2. `useVideoCallPermissions` Video Call Permissions Hook Setup Guide
+- [react-native-webrtc](https://github.com/react-native-webrtc/react-native-webrtc) - WebRTC implementation for React Native
+- [socket.io-client](https://www.npmjs.com/package/socket.io-client) - Client-side WebSocket library
+- [react-native-incall-manager](https://github.com/react-native-webrtc/react-native-incall-manager) - Manages audio/video call settings
+- [react-native-permissions](https://www.npmjs.com/package/react-native-permissions) - Handles runtime permissions for accessing the microphone and camera on both Android and iOS
 
-## Overview
-This guide explains how to use the `useVideoCallPermissions` hook to manage the permissions required for a video call in a React Native application. The hook handles requesting and checking permissions for the camera and microphone on both Android and iOS platforms.
+------
 
-## Prerequisites
-Before you start using this hook, ensure the following dependencies are installed:
+### 1. Frontend Permissions Setup
 
-1. **React Native** - For building your mobile application.
-2. **react-native-permissions** - A package that simplifies permission management for both iOS and Android in React Native.
+This section explains the setup and implementation of handling video call permissions in the WebRTC app.
 
-### Install Dependencies
+#### Required Dependencies
+- **react-native-permissions:** To manage and request permissions for camera and microphone.
 
-To install the required dependencies, run the following command:
+#### Required Permissions Setup : Android (AndroidManifest.xml)
 
-```bash
-npm install react-native-permissions
+Ensure you have the necessary permissions in `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
 ```
 
-## How the Hook Works
+#### Required Permissions Setup : iOS (Info.plist)
 
-The `useVideoCallPermissions` hook is responsible for checking and requesting the necessary permissions to use the camera and microphone for video calls. It works across both Android and iOS platforms.
+Add the following to `Info.plist`:
 
-### Code Breakdown
+```xml
+<key>NSCameraUsageDescription</key>
+<string>Your app needs camera access for video calls.</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>Your app needs microphone access for video calls.</string>
+```
 
+#### Code Implementation `src/hooks/useVideoCallPermissions.js`
 ```javascript
 import { useState, useEffect } from 'react';
 import { Platform, PermissionsAndroid } from 'react-native';
@@ -355,173 +170,381 @@ const useVideoCallPermissions = () => {
 export default useVideoCallPermissions;
 ```
 
-### Key Features
+#### Explanation
+- **State Initialization:** 
+  - `permissionsGranted`: Tracks whether the camera and microphone permissions are granted. Initially set to `false`.
 
-1. **`permissionsGranted`**: A state variable that stores whether both the camera and microphone permissions are granted (`true` if both are granted, `false` otherwise).
-2. **`checkAndRequestPermissions`**: An async function that checks and requests permissions for both the camera and microphone based on the platform. It returns `true` if both permissions are granted, otherwise `false`.
-3. **`useEffect`**: The hook calls `checkAndRequestPermissions` automatically when the component using this hook is mounted, ensuring that the permissions are checked and requested at the start.
+- **`checkAndRequestPermissions` Function:** 
+  - **Android:** 
+    - Requests both `CAMERA` and `RECORD_AUDIO` permissions using `PermissionsAndroid.requestMultiple`.
+    - Updates `permissionsGranted` based on whether both permissions are granted.
+  - **iOS:** 
+    - Checks the status of `CAMERA` and `MICROPHONE` permissions using `check`.
+    - Requests permissions using `request` if they're not granted.
+    - Updates `permissionsGranted` based on whether both permissions are granted.
 
-### Platform-Specific Logic
+- **Error Handling:** 
+  - Logs any errors that occur while checking or requesting permissions.
 
-- **Android**: The `PermissionsAndroid.requestMultiple` function is used to request both the camera and microphone permissions on Android devices.
-- **iOS**: The `react-native-permissions` package's `check` and `request` functions are used to check and request camera and microphone permissions.
+- **`useEffect`:** 
+  - Calls `checkAndRequestPermissions` on component mount to ensure permissions are checked and requested if needed.
 
-### Permission Flow
+- **Return Values:** 
+  - Returns `permissionsGranted` (status) and `checkAndRequestPermissions` (function to manually trigger permission checks/requests).
 
-1. **Android**: 
-   - Requests camera and microphone permissions.
-   - If permissions are granted, `permissionsGranted` is set to `true`.
-   - If any permission is denied, it will be set to `false`.
+------
 
-2. **iOS**: 
-   - Checks the status of the camera and microphone permissions.
-   - Requests the permissions if they are not granted.
-   - Sets the state of `permissionsGranted` based on whether both permissions are granted.
+### 2. Peer Connection Hook
 
-## How to Use the Hook
+This section explains the setup and implementation of the WebRTC peer connection in the WebRTC video call app.
 
-### 1. Import the Hook
+#### Required Dependencies
+- **react-native-webrtc:** For WebRTC functionality such as establishing peer-to-peer connections.
 
-To use the hook in your component, import it as shown below:
-
+#### Code Implementation `src/hooks/usePeerConnection.js`
 ```javascript
-import useVideoCallPermissions from './path-to-your-hook';
-```
+import { useEffect, useRef } from 'react';
+import { RTCPeerConnection } from 'react-native-webrtc';
 
-### 2. Use the Hook in Your Component
-
-You can now use the hook in any functional component to manage the permissions for a video call:
-
-```javascript
-import React, { useEffect } from 'react';
-import { View, Text } from 'react-native';
-import useVideoCallPermissions from './path-to-your-hook';
-
-const VideoCallComponent = () => {
-    const { permissionsGranted, checkAndRequestPermissions } = useVideoCallPermissions();
+export const usePeerConnection = () => {
+    const peerConnection = useRef(null);
 
     useEffect(() => {
-        if (!permissionsGranted) {
-            console.log('Permissions are not granted. Requesting...');
-            checkAndRequestPermissions();
-        } else {
-            console.log('Permissions granted!');
+        setupPeerConnection();
+        return () => { closePeerConnection(); };
+    }, []);
+
+    // Setup Peer Connection
+    const setupPeerConnection = () => {
+        // Only Work for same network provider
+        const connection = new RTCPeerConnection({
+            iceServers: [
+                {
+                    urls: 'stun:stun.l.google.com:19302',
+                },
+                {
+                    urls: 'stun:stun1.l.google.com:19302',
+                },
+                {
+                    urls: 'stun:stun2.l.google.com:19302',
+                },
+                {
+                    urls: 'stun:stun3.l.google.com:19302',
+                },
+                {
+                    urls: 'stun:stun4.l.google.com:19302',
+                },
+            ],
+        });
+
+        peerConnection.current = connection;
+    };
+
+    // Close Peer Connection
+    const closePeerConnection = () => {
+        if (peerConnection.current) {
+            peerConnection.current.close();
+            peerConnection.current = null;
         }
-    }, [permissionsGranted]);
+    };
 
-    return (
-        <View>
-            <Text>{permissionsGranted ? 'Permissions granted!' : 'Permissions not granted.'}</Text>
-        </View>
-    );
+    return {
+        peerConnection,
+        setupPeerConnection,
+        closePeerConnection,
+    };
 };
-
-export default VideoCallComponent;
 ```
 
-### 3. Handling Permissions Status
+#### Explanation
 
-- **When Permissions Are Granted**: If the permissions for the camera and microphone are granted, the component will show that the permissions are granted.
-- **When Permissions Are Not Granted**: If the permissions are not granted, the component will prompt the user to request permissions.
+- **State Initialization:** 
+  - `peerConnection`: A `useRef` hook is used to store the peer connection object. It persists across renders but does not trigger re-renders.
+  
+- **`useEffect` Hook:** 
+  - Runs `setupPeerConnection` when the component mounts to initialize the WebRTC connection.
+  - Cleans up by calling `closePeerConnection` when the component unmounts to properly close the connection.
 
-### 4. Manually Checking/Requesting Permissions
+- **`setupPeerConnection` Function:** 
+  - Creates a new `RTCPeerConnection` object using a set of STUN (Session Traversal Utilities for NAT) servers, which help in establishing peer-to-peer connections.
+  - These STUN servers are used for ICE (Interactive Connectivity Establishment) to find the best route for peer communication.
 
-You can manually check or request permissions by calling the `checkAndRequestPermissions` function:
+- **`closePeerConnection` Function:** 
+  - Closes the peer connection if it exists and nullifies the reference to clean up.
 
+- **Return Values:** 
+  - Returns `peerConnection` (reference to the peer connection), `setupPeerConnection` (function to set up the peer connection), and `closePeerConnection` (function to close the connection). 
+
+This hook encapsulates the WebRTC peer connection logic and makes it reusable across components that need to manage WebRTC connections.
+
+------
+
+### 3. WebRTC Setup for Video Call
+
+This section explains how WebRTC is configured for making and receiving video calls in the WebRTC-based video call app. The hook handles permissions, media streams, peer connections, and call management.
+
+#### Required Dependencies
+- **react-native-incall-manager:** Manages the in-call status (such as speakerphone and screen settings).
+- **react-native-webrtc:** Provides WebRTC functionalities for media streaming and peer connection.
+- **react-navigation:** Used for handling focus state in navigation.
+- **useVideoCallPermissions:** Custom hook to manage permissions.
+- **usePeerConnection:** Custom hook to manage peer connection.
+
+#### Code Implementation `src/hooks/useWebrtcForVC.js`
 ```javascript
-const requestPermissions = async () => {
-    const granted = await checkAndRequestPermissions();
-    if (granted) {
-        console.log('Permissions granted!');
-    } else {
-        console.log('Permissions denied.');
+import { useEffect, useState } from "react";
+import useVideoCallPermissions from "./useVideoCallPermissions";
+import { usePeerConnection } from "./usePeerConnection";
+import InCallManager from 'react-native-incall-manager';
+import { mediaDevices } from "react-native-webrtc";
+import { useIsFocused } from "@react-navigation/native";
+
+const videoResolutions = {
+    // Different video resolutions for quality management
+    SD_360p: { mandatory: { minWidth: 640, minHeight: 360, minFrameRate: 15 } },
+    HD_720p: { mandatory: { minWidth: 1280, minHeight: 720, minFrameRate: 30 } },
+    FHD_1080p: { mandatory: { minWidth: 1920, minHeight: 1080, minFrameRate: 30 } },
+    QHD_1440p: { mandatory: { minWidth: 2560, minHeight: 1440, minFrameRate: 60 } },
+    UHD_4K: { mandatory: { minWidth: 3840, minHeight: 2160, minFrameRate: 60 } },
+    UHD_8K: { mandatory: { minWidth: 7680, minHeight: 4320, minFrameRate: 60 } },
+};
+
+export const useWebrtcForVC = ({
+    onCreateOffer = (offer) => { console.log(`onCreateOffer : ${offer}`); },
+    onAnswerOffer = (answer) => { console.log(`onAnswerOffer : ${answer}`); },
+    onIceCandidate = (candidate) => { console.log(`onIceCandidate : ${candidate}`); },
+}) => {
+
+    // States and Hooks
+    const isFocus = useIsFocused(); // For navigation focus tracking
+    const { permissionsGranted, checkAndRequestPermissions } = useVideoCallPermissions();
+    const { peerConnection } = usePeerConnection();
+
+    const [localStream, setLocalStream] = useState(null);
+    const [remoteStream, setRemoteStream] = useState(null);
+    const [callConnected, setCallConnected] = useState(false);
+    const [isBigScaleLocalView, setIsBigScaleLocalView] = useState(false);
+    const [micEnable, setMicEnable] = useState(true);
+    const [speakerEnable, setSpeakerEnable] = useState(true);
+    const [cameraEnable, setCameraEnable] = useState(true);
+    const [frontCameraMode, setFrontCameraMode] = useState(true);
+
+    // Handle peer connection states
+    useEffect(() => {
+        const pc = peerConnection.current;
+        if (pc) {
+            pc.ontrack = (event) => { setRemoteStream(event.streams[0]); };
+            pc.onicecandidate = (event) => { event.candidate && onIceCandidate(event.candidate); };
+            pc.oniceconnectionstatechange = () => { console.log('ICE Connection State:', pc.iceConnectionState); };
+            pc.onconnectionstatechange = () => { console.log('Connection State:', pc.connectionState); };
+            pc.onsignalingstatechange = () => { console.log('Signaling State:', pc.signalingState); };
+        }
+    }, []);
+
+    // Cleanup when the component loses focus
+    useEffect(() => { if (!isFocus) cleanUpStream(); }, [isFocus]);
+
+    // Handle outgoing call (Caller)
+    const onStartCall = async () => {
+        try {
+            if (!permissionsGranted) {
+                const permission = await checkAndRequestPermissions();
+                if (!permission) return;
+            }
+
+            InCallManager.setKeepScreenOn(true);
+            InCallManager.setSpeakerphoneOn(true);
+            InCallManager.start({ media: 'video' });
+
+            const stream = await mediaDevices.getUserMedia({ audio: true, video: videoResolutions.UHD_8K });
+            setLocalStream(stream);
+
+            stream.getTracks().forEach((track) => peerConnection.current.addTrack(track, stream));
+
+            const offer = await peerConnection.current.createOffer();
+            await peerConnection.current.setLocalDescription(offer);
+
+            onCreateOffer(offer);
+        } catch (error) {
+            console.log('Local Stream error:', error);
+        }
+    };
+
+    // Handle incoming call (Callee)
+    const onCallAccept = async (data) => {
+        try {
+            await peerConnection.current.setRemoteDescription(data.offer);
+            InCallManager.setSpeakerphoneOn(true);
+            InCallManager.setKeepScreenOn(true);
+            InCallManager.start({ media: 'video' });
+
+            const stream = await mediaDevices.getUserMedia({ audio: true, video: videoResolutions.UHD_8K });
+            setLocalStream(stream);
+
+            stream.getTracks().forEach((track) => peerConnection.current.addTrack(track, stream));
+
+            const answer = await peerConnection.current.createAnswer();
+            await peerConnection.current.setLocalDescription(answer);
+
+            onAnswerOffer(answer);
+            setCallConnected(true);
+        } catch (error) {
+            console.log('Incoming Call Error:', error);
+        }
+    };
+
+    // Answer the call
+    const handleAnswer = async (data) => {
+        try {
+            await peerConnection.current.setRemoteDescription(data.answer);
+            setCallConnected(true);
+        } catch (error) {
+            console.log('Handle Answer Error:', error);
+        }
+    };
+
+    // Handle ICE candidate
+    const handleCandidate = (data) => {
+        try {
+            data?.candidate && peerConnection.current.addIceCandidate(data.candidate);
+        } catch (error) {
+            console.log('Handle Candidate Error:', error);
+        }
+    };
+
+    // Clean up media streams
+    const cleanUpStream = async () => {
+        stopMediaStream(localStream);
+        stopMediaStream(remoteStream);
+        setLocalStream(null);
+        setRemoteStream(null);
+        InCallManager.setKeepScreenOn(false);
+        InCallManager.stop();
+    };
+
+    const stopMediaStream = (stream) => { stream && stream.getTracks().forEach((track) => track.stop()); };
+
+    // Toggle controls (microphone, speaker, camera)
+    const onToggleMic = () => { setMicEnable((prev) => !prev); toggleAudio(localStream); };
+    const onToggleSpeaker = () => { setSpeakerEnable((prev) => !prev); toggleAudio(remoteStream); };
+    const onToggleCamera = async () => { setCameraEnable((prev) => !prev); toggleVideo(localStream); };
+    const onSwitchCameraMode = async () => {
+        if (localStream) {
+            localStream?.getVideoTracks()?.forEach(track => track._switchCamera());
+            setFrontCameraMode((prev) => !prev);
+        }
+    };
+
+    const toggleAudio = (stream) => { if (stream) stream.getAudioTracks().forEach(track => track.enabled = !track.enabled); };
+    const toggleVideo = (stream) => { if (stream) stream.getVideoTracks().forEach(track => track.enabled = !track.enabled); };
+
+    // View scaling for local video
+    const onViewScaleChange = () => { setIsBigScaleLocalView((prev) => !prev); };
+
+    return {
+        localStream,
+        remoteStream,
+        callConnected,
+        isBigScaleLocalView,
+        micEnable,
+        speakerEnable,
+        cameraEnable,
+        frontCameraMode,
+
+        onStartCall,
+        onCallAccept,
+        onViewScaleChange,
+        onToggleMic,
+        onToggleSpeaker,
+        onToggleCamera,
+        onSwitchCameraMode,
+
+        handleAnswer,
+        handleCandidate,
+    };
+};
+```
+
+#### Explanation
+
+- **State Variables:**
+  - Manages state for local and remote video streams, call connection status, and video/audio controls like microphone, speaker, and camera.
+
+- **`useEffect` Hooks:**
+  - Handles setting up the peer connection and managing states like track changes, ICE candidates, and connection statuses.
+  - Cleans up media streams and stops the call when the component loses focus.
+
+- **Peer Connection:**
+  - Uses `RTCPeerConnection` to handle signaling, tracks, and media streaming.
+
+- **Media Stream Management:**
+  - Manages both local and remote streams using `getUserMedia` to access video/audio and updates `RTCPeerConnection` tracks.
+
+- **Permissions & Call Setup:**
+  - Ensures that required permissions (audio/video) are granted before starting the call.
+  - Starts the call with media settings and sets up the local peer connection.
+
+- **Call Control:**
+  - Includes functions for toggling microphone, speaker, camera, and camera mode, as well as controlling video scaling and switching between front/back cameras.
+
+This hook encapsulates the logic for both initiating and receiving video calls with WebRTC, managing video streams, and controlling call settings.
+
+------
+### 4. Video Call Screen Setup
+
+This section explains the setup and implementation of the video call UI in the WebRTC app.
+
+#### Required Dependencies
+- **react-native-webrtc:** To handle video and audio streams for WebRTC.
+- **react-native-incall-manager:** To manage incoming call sounds (e.g., ringtone).
+- **react-navigation:** For navigating between screens.
+- **react-native-permissions:** To handle permissions for camera and microphone (if required).
+
+#### Code Implementation `src/screens/VideoCallScreen.js`
+```javascript
+import { Alert, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { RTCView } from 'react-native-webrtc';
+import socketServices from '../api/socketServices';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import DraggableView from '../components/DraggableView';
+import { useWebrtcForVC } from '../hooks/useWebrtcForVC';
+import InCallManager from 'react-native-incall-manager';
+import { sockets } from '../api/helper';
+
+const { width, height } = Dimensions.get('screen');
+
+const VideoCallScreen = () => {
+    const route = useRoute();
+    const navigation = useNavigation();
+
+    const { localUserId, remoteUserId } = route?.params;
+
+    // Socket events for video call signaling
+    const onCreateOffer = (offer) => {
+        socketServices.emit(sockets.VideoCall.offer, {
+            from: localUserId,
+            to: remoteUserId,
+            offer: offer,
+        });
     }
-};
-```
 
-## Troubleshooting
+    const onAnswerOffer = (answer) => {
+        socketServices.emit(sockets.VideoCall.answer, {
+            from: localUserId,
+            to: remoteUserId,
+            answer: answer,
+        });
+    }
 
-- **Permissions Not Being Requested**: If permissions are not being requested, ensure that the app has the correct permissions set in the `AndroidManifest.xml` (for Android) and `Info.plist` (for iOS).
-- **Permissions Not Being Granted**: If permissions are not granted, the user may have denied them previously. You can guide the user to manually enable permissions through the device's settings.
+    const onIceCandidate = (candidate) => {
+        socketServices.emit(sockets.VideoCall.candidate, {
+            from: localUserId,
+            to: remoteUserId,
+            candidate: candidate,
+        });
+    }
 
-### Android (AndroidManifest.xml)
-
-Ensure you have the required permissions in your `AndroidManifest.xml`:
-
-```xml
-<uses-permission android:name="android.permission.CAMERA" />
-<uses-permission android:name="android.permission.RECORD_AUDIO" />
-```
-
-### iOS (Info.plist)
-
-Ensure you have the required permissions in your `Info.plist`:
-
-```xml
-<key>NSCameraUsageDescription</key>
-<string>Your app needs camera access for video calls.</string>
-<key>NSMicrophoneUsageDescription</key>
-<string>Your app needs microphone access for video calls.</string>
-```
-
-## Conclusion
-
-The `useVideoCallPermissions` hook simplifies managing the permissions required for video calls in a React Native application. It automatically handles the request process based on the platform and provides a simple interface for checking and requesting camera and microphone permissions.
-
---------------------------------------------------------------------------------------------------------------------------------------------
-
-# 3. `useWebrtcForVC` WebRTC Video Call Setup Guide
-
-## Overview
-This guide provides instructions for setting up and using WebRTC for video calling in a React Native project. The provided hook (`useWebrtcForVC`) manages the necessary functionalities for initiating, accepting, and handling WebRTC video calls, including managing the local and remote video streams and handling microphone and speaker states.
-
-## Prerequisites
-Before using the hook in your project, make sure you have the following dependencies installed:
-
-1. **React Native**
-2. **react-native-webrtc**: For WebRTC functionalities like obtaining media streams.
-3. **react-native-incall-manager**: For managing call behaviors such as keeping the screen on and controlling the speaker.
-4. **@react-navigation/native**: For detecting whether the screen is focused.
-
-### Install Dependencies
-
-You can install the required packages by running the following commands:
-
-```bash
-npm install react-native-webrtc react-native-incall-manager @react-navigation/native
-```
-
-## Files and Structure
-
-The `useWebrtcForVC` hook provides all the functionality to manage a WebRTC call, including:
-- **Local Video Stream**
-- **Remote Video Stream**
-- **Call Connection Status**
-- **Microphone and Speaker Toggle**
-
-### Dependencies
-
-- **`useVideoCallPermissions`**: A custom hook to handle video call permission requests.
-- **`usePeerConnection`**: A custom hook that manages the peer connection.
-- **`mediaDevices` from `react-native-webrtc`**: For accessing media devices like the camera and microphone.
-- **`InCallManager` from `react-native-incall-manager`**: For managing in-call settings like the screen and speakerphone behavior.
-- **`videoResolutions` from `../utils/helper`**: For managing the video resolution settings.
-- **`useIsFocused` from `@react-navigation/native`**: For detecting whether the screen is in focus.
-
-## How to Use
-
-### Import the Hook
-
-```javascript
-import { useWebrtcForVC } from './path-to-your-hook';
-```
-
-### Use the Hook in Your Component
-
-You can use the `useWebrtcForVC` hook to handle WebRTC-related functionality in your component. Here is an example:
-
-```javascript
-const MyComponent = () => {
     const {
         localStream,
         remoteStream,
@@ -529,310 +552,224 @@ const MyComponent = () => {
         isBigScaleLocalView,
         micEnable,
         speakerEnable,
-
+        frontCameraMode,
         onStartCall,
         onCallAccept,
         onViewScaleChange,
         onToggleMic,
         onToggleSpeaker,
-
         handleAnswer,
         handleCandidate,
     } = useWebrtcForVC({
-        onCreateOffer: (offer) => {
-            console.log('Offer Created:', offer);
-        },
-        onAnswerOffer: (answer) => {
-            console.log('Answer Received:', answer);
-        },
-        onIceCandidate: (candidate) => {
-            console.log('ICE Candidate:', candidate);
-        }
+        onIceCandidate,
+        onCreateOffer,
+        onAnswerOffer,
     });
 
-    return (
-        <View>
-            {/* Display Video Streams */}
-            <VideoView stream={localStream} isBigScale={isBigScaleLocalView} />
-            <VideoView stream={remoteStream} />
+    // Socket communication setup
+    useEffect(() => {
+        socketServices.emit(sockets.JoinSocket, localUserId);
+        socketServices.on(sockets.VideoCall.offer, handleIncomingCall);
+        socketServices.on(sockets.VideoCall.answer, handleAnswer);
+        socketServices.on(sockets.VideoCall.candidate, handleCandidate);
+        socketServices.on(sockets.VideoCall.hangup, handleRemoteHangup);
 
-            {/* Call Control Buttons */}
-            <Button title="Start Call" onPress={onStartCall} />
-            <Button title="Accept Call" onPress={() => onCallAccept(callData)} />
+        return () => {
+            socketServices.emit(sockets.LeaveSocket, localUserId);
+            socketServices.removeListener(sockets.VideoCall.offer);
+            socketServices.removeListener(sockets.VideoCall.answer);
+            socketServices.removeListener(sockets.VideoCall.candidate);
+            socketServices.removeListener(sockets.VideoCall.hangup);
+        };
+    }, []);
 
-            {/* Toggle Mic and Speaker */}
-            <Button title={`Mic ${micEnable ? 'Off' : 'On'}`} onPress={onToggleMic} />
-            <Button title={`Speaker ${speakerEnable ? 'Off' : 'On'}`} onPress={onToggleSpeaker} />
+    // Handle hangup action
+    const onHangUpPress = () => {
+        InCallManager.stopRingtone();
+        socketServices.emit(sockets.VideoCall.hangup, { from: localUserId, to: remoteUserId });
+        navigation.canGoBack() && navigation.goBack();
+    };
 
-            {/* Change Video View Scale */}
-            <Button title={`Toggle View`} onPress={onViewScaleChange} />
-        </View>
-    );
-};
-```
-
-### Functions
-
-The hook exposes several functions to manage the call:
-
-1. **`onStartCall`**: Starts the video call by requesting necessary permissions and getting the local media stream. It also creates an offer to send to the remote peer.
-2. **`onCallAccept`**: Accepts an incoming call by setting the remote description, creating a local stream, and sending an answer to the remote peer.
-3. **`onViewScaleChange`**: Toggles the local video view between big and small scale.
-4. **`onToggleMic`**: Toggles the microphone on or off for the local stream.
-5. **`onToggleSpeaker`**: Toggles the speaker on or off for the remote stream.
-6. **`handleAnswer`**: Handles the incoming answer to a call.
-7. **`handleCandidate`**: Handles the ICE candidates for the connection.
-
-### State Variables
-
-The hook provides the following state variables to manage the state of the call:
-
-- **`localStream`**: The local media stream.
-- **`remoteStream`**: The remote media stream.
-- **`callConnected`**: A boolean indicating if the call is connected.
-- **`isBigScaleLocalView`**: A boolean indicating whether the local video is displayed in big scale or small scale.
-- **`micEnable`**: A boolean indicating whether the microphone is enabled or not.
-- **`speakerEnable`**: A boolean indicating whether the speaker is enabled or not.
-
-### Permission Handling
-
-Before starting a call, the hook checks for permissions using the `checkAndRequestPermissions` method from the `useVideoCallPermissions` hook. Ensure you handle permission requests properly in your app.
-
-### Cleanup
-
-The hook provides a cleanup method (`cleanUpStream`) that stops the media stream and resets the state when the component is no longer in focus.
-
-```javascript
-useEffect(() => {
-    // Clean up resources when the screen is no longer focused
-    if (!isFocus) {
-        cleanUpStream();
+    // Handle incoming call alert
+    const handleIncomingCall = (data) => {
+        InCallManager.startRingtone();
+        Alert.alert('Incoming Call', 'Accept the call?', [
+            {
+                text: 'Reject',
+                onPress: onHangUpPress,
+                style: 'cancel',
+            },
+            {
+                text: 'Accept',
+                onPress: () => { onCallAccept(data), InCallManager.stopRingtone(); },
+            },
+        ]);
     }
-}, [isFocus]);
-```
 
-## Customization
+    // Handle remote user hangup
+    const handleRemoteHangup = () => {
+        try {
+            Alert.alert('Call Ended', 'Call has been ended.');
+            navigation.canGoBack() && navigation.goBack();
+        } catch (error) {
+            console.log(`Handle Remote Hangup Error: ${error}`)
+        }
+    }
 
-You can customize the hook by passing callback functions to handle the creation of the offer, answering the offer, and handling ICE candidates:
+    return (
+        <View style={styles.Container}>
+            {
+                (callConnected && localStream && remoteStream) ?
+                    <>
+                        <View style={styles.RemoteVideo}>
+                            <RTCView
+                                streamURL={isBigScaleLocalView ? localStream.toURL() : remoteStream.toURL()}
+                                style={styles.RTCViewStyle}
+                                objectFit="cover"
+                                mirror={isBigScaleLocalView ? frontCameraMode : false}
+                            />
+                        </View>
+                        <View style={styles.LocalViewContainer}>
+                            <DraggableView
+                                x={width}
+                                y={height - 140}
+                                border={25}
+                                bounceHorizontal
+                                bounceVertical
+                            >
+                                <TouchableOpacity
+                                    style={styles.LocalVideo}
+                                    activeOpacity={1}
+                                    onPress={onViewScaleChange}
+                                >
+                                    <RTCView
+                                        streamURL={isBigScaleLocalView ? remoteStream.toURL() : localStream.toURL()}
+                                        style={styles.RTCViewStyle}
+                                        objectFit="cover"
+                                        mirror={isBigScaleLocalView ? false : frontCameraMode}
+                                    />
+                                </TouchableOpacity>
+                            </DraggableView>
+                        </View>
+                    </>
+                    :
+                    localStream &&
+                    <View style={styles.RemoteVideo}>
+                        <RTCView
+                            streamURL={localStream.toURL()}
+                            style={styles.RTCViewStyle}
+                            objectFit="cover"
+                            mirror={frontCameraMode}
+                        />
+                    </View>
+            }
 
-```javascript
-const { onCreateOffer, onAnswerOffer, onIceCandidate } = useWebrtcForVC({
-    onCreateOffer: (offer) => { console.log('Offer Created:', offer); },
-    onAnswerOffer: (answer) => { console.log('Answer Received:', answer); },
-    onIceCandidate: (candidate) => { console.log('ICE Candidate:', candidate); },
+            <View style={styles.ButtonContainer}>
+                {
+                    (remoteStream || localStream) ?
+                        <>
+                            <TouchableOpacity style={[styles.Button, !speakerEnable && styles.HangUpButton]} onPress={onToggleSpeaker} activeOpacity={1}>
+                                <Text style={styles.ButtonText}>{speakerEnable ? 'SE' : 'SD'}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.Button, styles.HangUpButton]} onPress={onHangUpPress}>
+                                <Text style={styles.ButtonText}>Hang Up</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.Button, !micEnable && styles.HangUpButton]} onPress={onToggleMic} activeOpacity={1}>
+                                <Text style={styles.ButtonText}>{micEnable ? 'ME' : 'MD'}</Text>
+                            </TouchableOpacity>
+                        </>
+                        :
+                        <TouchableOpacity style={styles.Button} onPress={onStartCall}>
+                            <Text style={styles.ButtonText}>Start</Text>
+                        </TouchableOpacity>
+                }
+            </View>
+        </View>
+    )
+}
+
+export default VideoCallScreen;
+
+const styles = StyleSheet.create({
+    Container: {
+        flex: 1,
+        backgroundColor: '#FFF',
+    },
+    RTCViewStyle: {
+        width: '100%',
+        height: '100%',
+    },
+    RemoteVideo: {
+        width: '100%',
+        height: '100%',
+        position: 'absolute',
+        zIndex: 1,
+    },
+    LocalViewContainer: {
+        width: width,
+        marginTop: 45,
+        position: 'absolute',
+        zIndex: 10,
+        padding: 25,
+        height: height - 140,
+    },
+    LocalVideo: {
+        width: 100,
+        aspectRatio: 1 / 1.5,
+        borderRadius: 20,
+        overflow: 'hidden',
+        zIndex: 100,
+    },
+    ButtonContainer: {
+        zIndex: 10,
+        position: 'absolute',
+        bottom: 50,
+        flexDirection: 'row',
+        justifyContent: 'space-evenly',
+        alignItems: 'center',
+        width: '100%',
+    },
+    Button: {
+        backgroundColor: '#4CAF50',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    HangUpButton: {
+        backgroundColor: '#F44336',
+    },
+    ButtonText: {
+        color: '#FFF',
+        fontSize: 16,
+        fontWeight: '800',
+    },
 });
 ```
 
-These functions allow you to manage offer/answer signaling and ICE candidate handling in your app.
+#### Explanation
+- **State and Variables:**
+  - `localUserId` and `remoteUserId`: Retrieved from the route params to handle signaling between two users.
+  - `localStream`, `remoteStream`, `callConnected`: Managed by `useWebrtcForVC` to track media streams and call state.
+  - `isBigScaleLocalView`, `micEnable`, `speakerEnable`, `frontCameraMode`: State variables controlling the appearance and functionality of the call (e.g., mirror effect, scaling).
+  
+- **Socket Communication (`useEffect`):**
+  - Emits socket events to join and leave the call room and sets up listeners for incoming call signaling (offer, answer, candidate, hangup).
+  - Ensures that the relevant socket listeners are removed when the component unmounts.
 
-## Conclusion
+- **Video Call Flow:**
+  - `onCreateOffer`, `onAnswerOffer`, `onIceCandidate`: Functions to handle WebRTC signaling for offer creation, offer answering, and ICE candidate exchange.
+  - `onHangUpPress`: Ends the call by emitting a `hangup` signal and navigating back to the previous screen.
+  - `handleIncomingCall`: Handles incoming call notifications, showing an alert for the user to accept or reject the call.
+  - `handleRemoteHangup`: Displays an alert when the remote user ends the call.
 
-With this setup, you can easily manage WebRTC-based video calls in your React Native application. The hook provides an abstraction for peer connection handling, media stream management, and call control, allowing you to focus on building the UI and other features of your app.
+- **UI Elements:**
+  - **RTCView Components:** Display the local and remote video streams using `RTCView`.
+  - **Draggable Local View:** The local video view can be dragged around the screen using `DraggableView`.
+  - **Call Control Buttons:** Buttons for toggling microphone, speaker, and ending the call. The buttons change their appearance based on the current state (enabled/disabled).
 
---------------------------------------------------------------------------------------------------------------------------------------------
+- **Style:** 
+  - Custom styles for layout and button design, including a floating local video view and call control buttons at the bottom of the screen.
 
-# Usage Video Call Screen Setup Guide
-
-## Overview
-This guide provides detailed instructions on how to set up and use the `VideoCallScreen` component in your React Native application. The component is designed for video calling using WebRTC, allowing users to make and receive video calls.
-
-### Features:
-- **Video Streaming**: Displays local and remote video streams.
-- **Call Management**: Allows users to start, accept, reject, and hang up calls.
-- **Audio Control**: Provides toggles for enabling/disabling the microphone and speaker.
-- **Responsive UI**: Automatically adjusts to screen size and supports local and remote video views.
-
-## Prerequisites
-
-Before you can use the `VideoCallScreen`, ensure that you have the following dependencies installed:
-
-1. **React Native** - A framework for building mobile apps.
-2. **react-native-webrtc** - WebRTC library for video calling.
-3. **Socket.io** - For real-time bidirectional communication.
-4. **react-navigation** - For navigation between screens.
-
-You can install the required dependencies by running the following commands:
-
-```bash
-npm install react-native-webrtc react-navigation react-navigation-stack socket.io-client react-native-permissions
-```
-
-## Setting Up the Video Call Screen
-
-### 1. Create the `VideoCallScreen` Component
-
-The `VideoCallScreen` component handles video call functionality, including initiating a call, receiving calls, managing the video streams, and toggling the microphone and speaker. 
-
-### 2. Component Breakdown
-
-```javascript
-import { Alert, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React, { useEffect } from 'react';
-import { RTCView } from 'react-native-webrtc';
-import socketServices from '../api/socketServices';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { useWebrtcForVC } from '../hooks/useWebrtcForVC';
-
-const { width, height } = Dimensions.get('screen');
-```
-
-- **RTCView**: Used to display the video streams (local and remote).
-- **socketServices**: Manages the communication through WebSockets (like offer, answer, candidate, etc.).
-- **useWebrtcForVC**: Custom hook to manage WebRTC functionalities.
-
-### 3. Parameters and Socket Management
-
-- `localUserId` and `remoteUserId`: These are passed through the route params and are used to identify the users involved in the call.
-- The `useEffect` hook sets up the socket listeners to handle incoming offers, answers, candidates, and hangups.
-- **Socket Events**:
-    - `offer`: Received when the remote user initiates a call.
-    - `answer`: Sent when the local user accepts the call.
-    - `candidate`: ICE candidate for establishing the connection.
-    - `hangup`: Ends the call.
-
-```javascript
-useEffect(() => {
-    socketServices.emit('JoinSocket', localUserId);
-
-    socketServices.on('offer', handleIncomingCall);
-    socketServices.on('answer', handleAnswer);
-    socketServices.on('candidate', (data) => { handleCandidate(remoteUserId, data) });
-    socketServices.on('hangup', handleRemoteHangup);
-
-    return () => {
-        socketServices.emit('LeaveSocket', localUserId);
-        socketServices.removeListener('offer');
-        socketServices.removeListener('answer');
-        socketServices.removeListener('candidate');
-        socketServices.removeListener('hangup');
-    }
-}, [])
-```
-
-### 4. User Actions
-
-- **Start Call**: Initiates the call by calling `onStartCall`.
-- **Accept Call**: Accepts the incoming call through the `onCallAccept` method.
-- **Hang Up**: Ends the call by emitting the `hangup` event.
-- **Toggle Mic/Speaker**: The microphone and speaker can be toggled using `onToggleMic` and `onToggleSpeaker`.
-
-### 5. UI Components
-
-The UI consists of:
-
-- **RTCView for Remote Video**: Displays the video of the remote user.
-- **RTCView for Local Video**: Displays the local user's video in a small thumbnail.
-- **Buttons**: Allow users to start the call, toggle the microphone and speaker, and hang up.
-
-```javascript
-<View style={styles.ButtonContainer}>
-    {(remoteStream || localStream) ? (
-        <>
-            <TouchableOpacity style={[styles.Button, !speakerEnable && styles.HangUpButton]} onPress={onToggleSpeaker} activeOpacity={1}>
-                <Text style={styles.ButtonText}>{speakerEnable ? 'SE' : 'SD'}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.Button, styles.HangUpButton]} onPress={onHangUpPress}>
-                <Text style={styles.ButtonText}>Hang Up</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.Button, !micEnable && styles.HangUpButton]} onPress={onToggleMic} activeOpacity={1}>
-                <Text style={styles.ButtonText}>{micEnable ? 'ME' : 'MD'}</Text>
-            </TouchableOpacity>
-        </>
-    ) : (
-        <TouchableOpacity style={styles.Button} onPress={onStartCall}>
-            <Text style={styles.ButtonText}>Start</Text>
-        </TouchableOpacity>
-    )}
-</View>
-```
-
-### 6. Handling Incoming Call
-
-When an incoming call is received, the app shows an alert with the options to accept or reject the call.
-
-```javascript
-const handleIncomingCall = (data) => {
-    Alert.alert('Incoming Call', 'Accept the call?', [
-        {
-            text: 'Reject',
-            onPress: onHangUpPress,
-            style: 'cancel',
-        },
-        {
-            text: 'Accept',
-            onPress: () => { onCallAccept(data) },
-        },
-    ]);
-}
-```
-
-### 7. Handling Remote Hangup
-
-When the remote user ends the call, the app will show an alert and navigate back to the previous screen.
-
-```javascript
-const handleRemoteHangup = () => {
-    try {
-        Alert.alert('Call Ended', 'Call has been ended.');
-        navigation.canGoBack() && navigation.goBack();
-    } catch (error) {
-        console.log(`Handle Remote Hangup Error: ${error}`)
-    }
-}
-```
-
-## Installation Steps
-
-1. **Install Dependencies**
-
-Make sure you have installed the necessary packages as mentioned in the Prerequisites section:
-
-```bash
-npm install react-native-webrtc react-navigation react-navigation-stack socket.io-client react-native-permissions
-```
-
-2. **Set Up WebRTC**
-
-To use `react-native-webrtc`, you need to ensure that your app has the correct configuration and permissions for camera and microphone. Follow the setup instructions for `react-native-webrtc`:
-
-- [Setting Up WebRTC on iOS](https://github.com/react-native-webrtc/react-native-webrtc/blob/master/docs/installation.md#ios)
-- [Setting Up WebRTC on Android](https://github.com/react-native-webrtc/react-native-webrtc/blob/master/docs/installation.md#android)
-
-3. **Socket Configuration**
-
-Ensure that your backend supports WebSocket communication using `socket.io`. You'll need to handle signaling (offers, answers, candidates) on your server.
-
-4. **Testing**
-
-To test the video call functionality, ensure that both devices have the app installed and connected to the same signaling server. You can test the call functionality using two devices or simulators.
-
-## Troubleshooting
-
-- **Permissions Issues**: Ensure that the app has the necessary permissions for camera and microphone on both Android and iOS.
-- **Connection Issues**: Check your WebSocket connection. Make sure the signaling server is running and both clients are connected.
-
-### Android (AndroidManifest.xml)
-
-Ensure you have the necessary permissions in `AndroidManifest.xml`:
-
-```xml
-<uses-permission android:name="android.permission.CAMERA" />
-<uses-permission android:name="android.permission.RECORD_AUDIO" />
-```
-
-### iOS (Info.plist)
-
-Add the following to `Info.plist`:
-
-```xml
-<key>NSCameraUsageDescription</key>
-<string>Your app needs camera access for video calls.</string>
-<key>NSMicrophoneUsageDescription</key>
-<string>Your app needs microphone access for video calls.</string>
-```
-
-## Conclusion
-
-The `VideoCallScreen` component provides a complete solution for making video calls using WebRTC in a React Native application. With the included features like call initiation, acceptance, video streaming, and audio control, you can integrate real-time video calling into your app.
-
-For further customization, feel free to modify the component based on your application's needs.
+This file is a complete UI and logic setup for a video call, including signaling, media streaming, and call controls.

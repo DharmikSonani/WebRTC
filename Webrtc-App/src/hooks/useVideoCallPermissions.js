@@ -16,7 +16,7 @@ const useVideoCallPermissions = () => {
                 const cameraGranted = granted[PermissionsAndroid.PERMISSIONS.CAMERA] === PermissionsAndroid.RESULTS.GRANTED;
                 const micGranted = granted[PermissionsAndroid.PERMISSIONS.RECORD_AUDIO] === PermissionsAndroid.RESULTS.GRANTED;
                 setPermissionsGranted(cameraGranted && micGranted);
-                return cameraGranted && micGranted
+                return cameraGranted && micGranted;
             } else if (Platform.OS === 'ios') {
                 const cameraStatus = await check(PERMISSIONS.IOS.CAMERA);
                 const micStatus = await check(PERMISSIONS.IOS.MICROPHONE);

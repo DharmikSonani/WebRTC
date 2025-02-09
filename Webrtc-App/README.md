@@ -11,9 +11,13 @@ This document outlines the setup and implementation of the frontend for the WebR
 - [react-native-incall-manager](https://github.com/react-native-webrtc/react-native-incall-manager) - Manages audio/video call settings
 - [react-native-permissions](https://www.npmjs.com/package/react-native-permissions) - Handles runtime permissions for accessing the microphone and camera on both Android and iOS
 
-### Code Implementation
+### 1. Frontend Permissions Setup
 
-#### File: `src/hooks/useVideoCallPermissions.js`
+This section explains the setup and implementation of handling video call permissions in the WebRTC app.
+
+#### Code Implementation
+
+#### `src/hooks/useVideoCallPermissions.js`
 ```javascript
 import { useState, useEffect } from 'react';
 import { Platform, PermissionsAndroid } from 'react-native';
@@ -33,7 +37,7 @@ const useVideoCallPermissions = () => {
                 const cameraGranted = granted[PermissionsAndroid.PERMISSIONS.CAMERA] === PermissionsAndroid.RESULTS.GRANTED;
                 const micGranted = granted[PermissionsAndroid.PERMISSIONS.RECORD_AUDIO] === PermissionsAndroid.RESULTS.GRANTED;
                 setPermissionsGranted(cameraGranted && micGranted);
-                return cameraGranted && micGranted
+                return cameraGranted && micGranted;
             } else if (Platform.OS === 'ios') {
                 const cameraStatus = await check(PERMISSIONS.IOS.CAMERA);
                 const micStatus = await check(PERMISSIONS.IOS.MICROPHONE);
@@ -86,9 +90,15 @@ export default useVideoCallPermissions;
 - **Return Values:** 
   - Returns `permissionsGranted` (status) and `checkAndRequestPermissions` (function to manually trigger permission checks/requests).
 
-----
+------
 
-#### File: `src/hooks/usePeerConnection.js`
+### 2. Peer Connection Hook
+
+This section explains the setup and implementation of the WebRTC peer connection in the WebRTC video call app.
+
+#### Code Implementation
+
+#### `src/hooks/usePeerConnection.js`
 ```javascript
 import { useEffect, useRef } from 'react';
 import { RTCPeerConnection } from 'react-native-webrtc';
@@ -144,6 +154,27 @@ export const usePeerConnection = () => {
 ```
 
 #### Explanation
+
+- **State Initialization:** 
+  - `peerConnection`: A `useRef` hook is used to store the peer connection object. It persists across renders but does not trigger re-renders.
+  
+- **`useEffect` Hook:** 
+  - Runs `setupPeerConnection` when the component mounts to initialize the WebRTC connection.
+  - Cleans up by calling `closePeerConnection` when the component unmounts to properly close the connection.
+
+- **`setupPeerConnection` Function:** 
+  - Creates a new `RTCPeerConnection` object using a set of STUN (Session Traversal Utilities for NAT) servers, which help in establishing peer-to-peer connections.
+  - These STUN servers are used for ICE (Interactive Connectivity Establishment) to find the best route for peer communication.
+
+- **`closePeerConnection` Function:** 
+  - Closes the peer connection if it exists and nullifies the reference to clean up.
+
+- **Return Values:** 
+  - Returns `peerConnection` (reference to the peer connection), `setupPeerConnection` (function to set up the peer connection), and `closePeerConnection` (function to close the connection). 
+
+This hook encapsulates the WebRTC peer connection logic and makes it reusable across components that need to manage WebRTC connections.
+
+------
 
 #### File: `src/hooks/useWebrtcForVC.js`
 ```javascript

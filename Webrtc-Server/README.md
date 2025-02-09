@@ -4,7 +4,7 @@ This document outlines the setup and implementation of the backend for the WebRT
 
 ## Required Dependencies
 
-- [Socket.io](https://github.com/socketio/socket.io) - Real-time bidirectional event-based communication
+- [Socket.io](https://www.npmjs.com/package/socket.io) - Real-time bidirectional event-based communication
 
 ## Code Implementation
 

@@ -64,6 +64,8 @@ const useVideoCallPermissions = () => {
 export default useVideoCallPermissions;
 ```
 
+#### Explanation
+
 #### File: `src/hooks/usePeerConnection.js`
 ```javascript
 import { useEffect, useRef } from 'react';
@@ -118,6 +120,8 @@ export const usePeerConnection = () => {
     };
 };
 ```
+
+#### Explanation
 
 #### File: `src/hooks/useWebrtcForVC.js`
 ```javascript
@@ -351,6 +355,8 @@ export const useWebrtcForVC = ({
     }
 }
 ```
+
+#### Explanation
 
 #### File: `src/screens/VideoCallScreen.js`
 ```javascript
@@ -599,3 +605,5 @@ const styles = StyleSheet.create({
     },
 })
 ```
+
+#### Explanation

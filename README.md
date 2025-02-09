@@ -8,7 +8,7 @@ This document outlines the setup and implementation of the backend for the WebRT
 
 - [Socket.io](https://www.npmjs.com/package/socket.io) - Real-time bidirectional event-based communication
 
-#### Code Implementation : `src/socket/socket.js`
+#### Code Implementation : [`src/socket/socket.js`](https://github.com/DharmikSonani/WebRTC/blob/Basic/Webrtc-Server/src/socket/socket.js)
 ```javascript
 const { Server } = require('socket.io');
 
@@ -97,7 +97,7 @@ This document outlines the setup and implementation of the frontend for the WebR
 This section explains the setup and implementation of handling video call permissions in the WebRTC app.
 
 #### Required Dependencies
-- **react-native-permissions:** To manage and request permissions for camera and microphone.
+- **[react-native-permissions](https://www.npmjs.com/package/react-native-permissions)** - To manage and request permissions for camera and microphone.
 
 #### Required Permissions Setup : Android (AndroidManifest.xml)
 
@@ -119,7 +119,7 @@ Add the following to `Info.plist`:
 <string>Your app needs microphone access for video calls.</string>
 ```
 
-#### Code Implementation `src/hooks/useVideoCallPermissions.js`
+#### Code Implementation [`src/hooks/useVideoCallPermissions.js`](https://github.com/DharmikSonani/WebRTC/blob/Basic/Webrtc-App/src/hooks/useVideoCallPermissions.js)
 ```javascript
 import { useState, useEffect } from 'react';
 import { Platform, PermissionsAndroid } from 'react-native';
@@ -183,9 +183,6 @@ export default useVideoCallPermissions;
     - Requests permissions using `request` if they're not granted.
     - Updates `permissionsGranted` based on whether both permissions are granted.
 
-- **Error Handling:** 
-  - Logs any errors that occur while checking or requesting permissions.
-
 - **`useEffect`:** 
   - Calls `checkAndRequestPermissions` on component mount to ensure permissions are checked and requested if needed.
 
@@ -199,9 +196,9 @@ export default useVideoCallPermissions;
 This section explains the setup and implementation of the WebRTC peer connection in the WebRTC video call app.
 
 #### Required Dependencies
-- **react-native-webrtc:** For WebRTC functionality such as establishing peer-to-peer connections.
+- **[react-native-webrtc](https://github.com/react-native-webrtc/react-native-webrtc)** - For WebRTC functionality such as establishing peer-to-peer connections.
 
-#### Code Implementation `src/hooks/usePeerConnection.js`
+#### Code Implementation [`src/hooks/usePeerConnection.js`](https://github.com/DharmikSonani/WebRTC/blob/Basic/Webrtc-App/src/hooks/usePeerConnection.js)
 ```javascript
 import { useEffect, useRef } from 'react';
 import { RTCPeerConnection } from 'react-native-webrtc';
@@ -284,13 +281,13 @@ This hook encapsulates the WebRTC peer connection logic and makes it reusable ac
 This section explains how WebRTC is configured for making and receiving video calls in the WebRTC-based video call app. The hook handles permissions, media streams, peer connections, and call management.
 
 #### Required Dependencies
-- **react-native-incall-manager:** Manages the in-call status (such as speakerphone and screen settings).
-- **react-native-webrtc:** Provides WebRTC functionalities for media streaming and peer connection.
-- **react-navigation:** Used for handling focus state in navigation.
-- **useVideoCallPermissions:** Custom hook to manage permissions.
-- **usePeerConnection:** Custom hook to manage peer connection.
+- **[react-native-incall-manager](https://github.com/react-native-webrtc/react-native-incall-manager)** - Manages the in-call status (such as speakerphone and screen settings).
+- **[react-native-webrtc](https://github.com/react-native-webrtc/react-native-webrtc)** - Provides WebRTC functionalities for media streaming and peer connection.
+- **[react-navigation](https://reactnavigation.org/docs/getting-started/)** - Used for handling focus state in navigation.
+- **[useVideoCallPermissions](https://github.com/DharmikSonani/WebRTC/blob/Basic/Webrtc-App/src/hooks/useVideoCallPermissions.js)** - Custom hook to manage permissions.
+- **[usePeerConnection](https://github.com/DharmikSonani/WebRTC/blob/Basic/Webrtc-App/src/hooks/usePeerConnection.js)** - Custom hook to manage peer connection.
 
-#### Code Implementation `src/hooks/useWebrtcForVC.js`
+#### Code Implementation [`src/hooks/useWebrtcForVC.js`](https://github.com/DharmikSonani/WebRTC/blob/Basic/Webrtc-App/src/hooks/useWebrtcForVC.js)
 ```javascript
 import { useEffect, useState } from "react";
 import useVideoCallPermissions from "./useVideoCallPermissions";
@@ -495,12 +492,12 @@ This hook encapsulates the logic for both initiating and receiving video calls w
 This section explains the setup and implementation of the video call UI in the WebRTC app.
 
 #### Required Dependencies
-- **react-native-webrtc:** To handle video and audio streams for WebRTC.
-- **react-native-incall-manager:** To manage incoming call sounds (e.g., ringtone).
-- **react-navigation:** For navigating between screens.
-- **react-native-permissions:** To handle permissions for camera and microphone (if required).
+- **[react-native-webrtc](https://github.com/react-native-webrtc/react-native-webrtc)** - To handle video and audio streams for WebRTC.
+- **[react-native-incall-manager](https://github.com/react-native-webrtc/react-native-incall-manager)** - To manage incoming call sounds (e.g., ringtone).
+- **[react-navigation](https://reactnavigation.org/docs/getting-started/)** - For navigating between screens.
+- **[react-native-permissions](https://www.npmjs.com/package/react-native-permissions)** - To handle permissions for camera and microphone (if required).
 
-#### Code Implementation `src/screens/VideoCallScreen.js`
+#### Code Implementation [`src/screens/VideoCallScreen.js`](https://github.com/DharmikSonani/WebRTC/blob/Basic/Webrtc-App/src/screens/VideoCallScreen.js)
 ```javascript
 import { Alert, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useEffect } from 'react';
@@ -751,7 +748,7 @@ const styles = StyleSheet.create({
 #### Explanation
 - **State and Variables:**
   - `localUserId` and `remoteUserId`: Retrieved from the route params to handle signaling between two users.
-  - `localStream`, `remoteStream`, `callConnected`: Managed by `useWebrtcForVC` to track media streams and call state.
+  - `localStream`, `remoteStream`, `callConnected`: Managed by [`useWebrtcForVC`](https://github.com/DharmikSonani/WebRTC/blob/Basic/Webrtc-App/src/hooks/useWebrtcForVC.js) to track media streams and call state.
   - `isBigScaleLocalView`, `micEnable`, `speakerEnable`, `frontCameraMode`: State variables controlling the appearance and functionality of the call (e.g., mirror effect, scaling).
   
 - **Socket Communication (`useEffect`):**
@@ -766,7 +763,7 @@ const styles = StyleSheet.create({
 
 - **UI Elements:**
   - **RTCView Components:** Display the local and remote video streams using `RTCView`.
-  - **Draggable Local View:** The local video view can be dragged around the screen using `DraggableView`.
+  - **Draggable Local View:** The local video view can be dragged around the screen using [`DraggableView`](https://github.com/DharmikSonani/WebRTC/blob/Basic/Webrtc-App/src/components/DraggableView.js).
   - **Call Control Buttons:** Buttons for toggling microphone, speaker, and ending the call. The buttons change their appearance based on the current state (enabled/disabled).
 
 - **Style:** 

@@ -65,6 +65,28 @@ export default useVideoCallPermissions;
 ```
 
 #### Explanation
+- **State Initialization:** 
+  - `permissionsGranted`: Tracks whether the camera and microphone permissions are granted. Initially set to `false`.
+
+- **`checkAndRequestPermissions` Function:** 
+  - **Android:** 
+    - Requests both `CAMERA` and `RECORD_AUDIO` permissions using `PermissionsAndroid.requestMultiple`.
+    - Updates `permissionsGranted` based on whether both permissions are granted.
+  - **iOS:** 
+    - Checks the status of `CAMERA` and `MICROPHONE` permissions using `check`.
+    - Requests permissions using `request` if they're not granted.
+    - Updates `permissionsGranted` based on whether both permissions are granted.
+
+- **Error Handling:** 
+  - Logs any errors that occur while checking or requesting permissions.
+
+- **`useEffect`:** 
+  - Calls `checkAndRequestPermissions` on component mount to ensure permissions are checked and requested if needed.
+
+- **Return Values:** 
+  - Returns `permissionsGranted` (status) and `checkAndRequestPermissions` (function to manually trigger permission checks/requests).
+
+----
 
 #### File: `src/hooks/usePeerConnection.js`
 ```javascript

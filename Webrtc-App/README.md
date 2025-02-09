@@ -11,13 +11,16 @@ This document outlines the setup and implementation of the frontend for the WebR
 - [react-native-incall-manager](https://github.com/react-native-webrtc/react-native-incall-manager) - Manages audio/video call settings
 - [react-native-permissions](https://www.npmjs.com/package/react-native-permissions) - Handles runtime permissions for accessing the microphone and camera on both Android and iOS
 
+------
+
 ### 1. Frontend Permissions Setup
 
 This section explains the setup and implementation of handling video call permissions in the WebRTC app.
 
-#### Code Implementation
+#### Required Dependencies
+- **react-native-permissions:** To manage and request permissions for camera and microphone.
 
-#### `src/hooks/useVideoCallPermissions.js`
+#### Code Implementation `src/hooks/useVideoCallPermissions.js`
 ```javascript
 import { useState, useEffect } from 'react';
 import { Platform, PermissionsAndroid } from 'react-native';
@@ -96,9 +99,10 @@ export default useVideoCallPermissions;
 
 This section explains the setup and implementation of the WebRTC peer connection in the WebRTC video call app.
 
-#### Code Implementation
+#### Required Dependencies
+- **react-native-webrtc:** For WebRTC functionality such as establishing peer-to-peer connections.
 
-#### `src/hooks/usePeerConnection.js`
+#### Code Implementation `src/hooks/usePeerConnection.js`
 ```javascript
 import { useEffect, useRef } from 'react';
 import { RTCPeerConnection } from 'react-native-webrtc';
@@ -176,7 +180,19 @@ This hook encapsulates the WebRTC peer connection logic and makes it reusable ac
 
 ------
 
-#### File: `src/hooks/useWebrtcForVC.js`
+### 3. WebRTC Setup for Video Call
+
+This section explains how WebRTC is configured for making and receiving video calls in the WebRTC-based video call app. The hook handles permissions, media streams, peer connections, and call management.
+
+#### Required Dependencies
+- **react-native-incall-manager:** Manages the in-call status (such as speakerphone and screen settings).
+- **react-native-webrtc:** Provides WebRTC functionalities for media streaming and peer connection.
+- **react-navigation:** Used for handling focus state in navigation.
+- **useVideoCallPermissions:** Custom hook to manage permissions.
+- **usePeerConnection:** Custom hook to manage peer connection.
+
+#### Code Implementation `src/hooks/useWebrtcForVC.js`
+
 ```javascript
 import { useEffect, useState } from "react";
 import useVideoCallPermissions from "./useVideoCallPermissions";
@@ -186,48 +202,13 @@ import { mediaDevices } from "react-native-webrtc";
 import { useIsFocused } from "@react-navigation/native";
 
 const videoResolutions = {
-    SD_360p: {
-        mandatory: {
-            minWidth: 640,
-            minHeight: 360,
-            minFrameRate: 15,
-        },
-    },
-    HD_720p: {
-        mandatory: {
-            minWidth: 1280,
-            minHeight: 720,
-            minFrameRate: 30,
-        },
-    },
-    FHD_1080p: {
-        mandatory: {
-            minWidth: 1920,
-            minHeight: 1080,
-            minFrameRate: 30,
-        },
-    },
-    QHD_1440p: {
-        mandatory: {
-            minWidth: 2560,
-            minHeight: 1440,
-            minFrameRate: 60,
-        },
-    },
-    UHD_4K: {
-        mandatory: {
-            minWidth: 3840,
-            minHeight: 2160,
-            minFrameRate: 60,
-        },
-    },
-    UHD_8K: {
-        mandatory: {
-            minWidth: 7680,
-            minHeight: 4320,
-            minFrameRate: 60,
-        },
-    },
+    // Different video resolutions for quality management
+    SD_360p: { mandatory: { minWidth: 640, minHeight: 360, minFrameRate: 15 } },
+    HD_720p: { mandatory: { minWidth: 1280, minHeight: 720, minFrameRate: 30 } },
+    FHD_1080p: { mandatory: { minWidth: 1920, minHeight: 1080, minFrameRate: 30 } },
+    QHD_1440p: { mandatory: { minWidth: 2560, minHeight: 1440, minFrameRate: 60 } },
+    UHD_4K: { mandatory: { minWidth: 3840, minHeight: 2160, minFrameRate: 60 } },
+    UHD_8K: { mandatory: { minWidth: 7680, minHeight: 4320, minFrameRate: 60 } },
 };
 
 export const useWebrtcForVC = ({
@@ -236,16 +217,13 @@ export const useWebrtcForVC = ({
     onIceCandidate = (candidate) => { console.log(`onIceCandidate : ${candidate}`); },
 }) => {
 
-    // Variables
-    const isFocus = useIsFocused();
-
-    // Custom Hooks
+    // States and Hooks
+    const isFocus = useIsFocused(); // For navigation focus tracking
     const { permissionsGranted, checkAndRequestPermissions } = useVideoCallPermissions();
     const { peerConnection } = usePeerConnection();
 
-    // State
-    const [localStream, setLocalStream] = useState(null); // Local User
-    const [remoteStream, setRemoteStream] = useState(null); // Remote User
+    const [localStream, setLocalStream] = useState(null);
+    const [remoteStream, setRemoteStream] = useState(null);
     const [callConnected, setCallConnected] = useState(false);
     const [isBigScaleLocalView, setIsBigScaleLocalView] = useState(false);
     const [micEnable, setMicEnable] = useState(true);
@@ -253,99 +231,90 @@ export const useWebrtcForVC = ({
     const [cameraEnable, setCameraEnable] = useState(true);
     const [frontCameraMode, setFrontCameraMode] = useState(true);
 
-    // useEffect
+    // Handle peer connection states
     useEffect(() => {
-        // Peer Connection (For Remote Stream)
         const pc = peerConnection.current;
-        if (pc && pc != null) {
-            pc.ontrack = (event) => { event.streams && event.streams[0] && setRemoteStream(event.streams[0]) }
-            pc.onicecandidate = (event) => { event.candidate && onIceCandidate(event.candidate) }
-            pc.oniceconnectionstatechange = () => { console.log('ICE Connection State:', pc.iceConnectionState); }
-            pc.onconnectionstatechange = () => { console.log('Connection State:', pc.connectionState); }
-            pc.onsignalingstatechange = () => { console.log('Signaling State:', pc.signalingState); }
+        if (pc) {
+            pc.ontrack = (event) => { setRemoteStream(event.streams[0]); };
+            pc.onicecandidate = (event) => { event.candidate && onIceCandidate(event.candidate); };
+            pc.oniceconnectionstatechange = () => { console.log('ICE Connection State:', pc.iceConnectionState); };
+            pc.onconnectionstatechange = () => { console.log('Connection State:', pc.connectionState); };
+            pc.onsignalingstatechange = () => { console.log('Signaling State:', pc.signalingState); };
         }
-    }, [])
+    }, []);
 
-    useEffect(() => { !isFocus && cleanUpStream() }, [isFocus])
+    // Cleanup when the component loses focus
+    useEffect(() => { if (!isFocus) cleanUpStream(); }, [isFocus]);
 
-    // Caller (Make)
+    // Handle outgoing call (Caller)
     const onStartCall = async () => {
         try {
             if (!permissionsGranted) {
-                const permission = checkAndRequestPermissions();
+                const permission = await checkAndRequestPermissions();
                 if (!permission) return;
-            };
+            }
 
             InCallManager.setKeepScreenOn(true);
             InCallManager.setSpeakerphoneOn(true);
             InCallManager.start({ media: 'video' });
 
-            const stream = await mediaDevices.getUserMedia({
-                audio: true,
-                video: videoResolutions.UHD_8K,
-            });
+            const stream = await mediaDevices.getUserMedia({ audio: true, video: videoResolutions.UHD_8K });
             setLocalStream(stream);
-            peerConnection.current && stream.getTracks().length > 0 && stream.getTracks().forEach((track) => peerConnection.current.addTrack(track, stream));
-            const offer = await peerConnection.current.createOffer();
 
+            stream.getTracks().forEach((track) => peerConnection.current.addTrack(track, stream));
+
+            const offer = await peerConnection.current.createOffer();
             await peerConnection.current.setLocalDescription(offer);
 
             onCreateOffer(offer);
         } catch (error) {
             console.log('Local Stream error:', error);
         }
-    }
+    };
 
+    // Handle incoming call (Callee)
+    const onCallAccept = async (data) => {
+        try {
+            await peerConnection.current.setRemoteDescription(data.offer);
+            InCallManager.setSpeakerphoneOn(true);
+            InCallManager.setKeepScreenOn(true);
+            InCallManager.start({ media: 'video' });
+
+            const stream = await mediaDevices.getUserMedia({ audio: true, video: videoResolutions.UHD_8K });
+            setLocalStream(stream);
+
+            stream.getTracks().forEach((track) => peerConnection.current.addTrack(track, stream));
+
+            const answer = await peerConnection.current.createAnswer();
+            await peerConnection.current.setLocalDescription(answer);
+
+            onAnswerOffer(answer);
+            setCallConnected(true);
+        } catch (error) {
+            console.log('Incoming Call Error:', error);
+        }
+    };
+
+    // Answer the call
     const handleAnswer = async (data) => {
         try {
             await peerConnection.current.setRemoteDescription(data.answer);
             setCallConnected(true);
         } catch (error) {
-            console.log(`Handle Answer Error: ${error}`)
+            console.log('Handle Answer Error:', error);
         }
-    }
+    };
 
+    // Handle ICE candidate
     const handleCandidate = (data) => {
         try {
             data?.candidate && peerConnection.current.addIceCandidate(data.candidate);
         } catch (error) {
-            console.log(`Handle Candidate Error: ${error}`)
+            console.log('Handle Candidate Error:', error);
         }
-    }
+    };
 
-    // Callee (Receive)
-    const onCallAccept = async (data) => {
-        try {
-            await peerConnection.current.setRemoteDescription(data.offer);
-
-            InCallManager.setSpeakerphoneOn(true);
-            InCallManager.setKeepScreenOn(true);
-            InCallManager.start({ media: 'video' });
-
-            const stream = await mediaDevices.getUserMedia({
-                audio: true,
-                video: videoResolutions.UHD_8K,
-            });
-
-            setLocalStream(stream);
-
-            stream.getTracks().forEach((track) => {
-                peerConnection.current.addTrack(track, stream);
-            });
-
-            const answer = await peerConnection.current.createAnswer();
-
-            await peerConnection.current.setLocalDescription(answer);
-
-            onAnswerOffer(answer);
-
-            setCallConnected(true);
-        } catch (error) {
-            console.log(`Incoming Call Error: ${error}`);
-        }
-    }
-
-    // Resource Method
+    // Clean up media streams
     const cleanUpStream = async () => {
         stopMediaStream(localStream);
         stopMediaStream(remoteStream);
@@ -353,37 +322,26 @@ export const useWebrtcForVC = ({
         setRemoteStream(null);
         InCallManager.setKeepScreenOn(false);
         InCallManager.stop();
-    }
+    };
 
-    const stopMediaStream = (stream) => { stream && stream.getTracks().forEach((track) => { track.stop() }) };
+    const stopMediaStream = (stream) => { stream && stream.getTracks().forEach((track) => track.stop()); };
 
-    const onViewScaleChange = () => { setIsBigScaleLocalView(pre => !pre) }
-
-    const onToggleMic = () => {
-        setMicEnable(pre => !pre);
-        toggleAudio(localStream);
-    }
-
-    const onToggleSpeaker = () => {
-        setSpeakerEnable(pre => !pre);
-        toggleAudio(remoteStream);
-    }
-
-    const toggleAudio = (stream) => {
-        if (stream) stream?.getAudioTracks()?.forEach(track => { track.enabled = !track.enabled });
-    }
-
-    const onToggleCamera = async () => {
-        setCameraEnable(pre => !pre);
-        if (localStream) localStream?.getVideoTracks()?.forEach(track => { track.enabled = !track.enabled });
-    }
-
+    // Toggle controls (microphone, speaker, camera)
+    const onToggleMic = () => { setMicEnable((prev) => !prev); toggleAudio(localStream); };
+    const onToggleSpeaker = () => { setSpeakerEnable((prev) => !prev); toggleAudio(remoteStream); };
+    const onToggleCamera = async () => { setCameraEnable((prev) => !prev); toggleVideo(localStream); };
     const onSwitchCameraMode = async () => {
         if (localStream) {
-            localStream?.getVideoTracks()?.forEach(track => { track._switchCamera(); })
-            if (cameraEnable) setFrontCameraMode(pre => !pre);
-        };
-    }
+            localStream?.getVideoTracks()?.forEach(track => track._switchCamera());
+            setFrontCameraMode((prev) => !prev);
+        }
+    };
+
+    const toggleAudio = (stream) => { if (stream) stream.getAudioTracks().forEach(track => track.enabled = !track.enabled); };
+    const toggleVideo = (stream) => { if (stream) stream.getVideoTracks().forEach(track => track.enabled = !track.enabled); };
+
+    // View scaling for local video
+    const onViewScaleChange = () => { setIsBigScaleLocalView((prev) => !prev); };
 
     return {
         localStream,
@@ -405,11 +363,35 @@ export const useWebrtcForVC = ({
 
         handleAnswer,
         handleCandidate,
-    }
-}
+    };
+};
 ```
 
 #### Explanation
+
+- **State Variables:**
+  - Manages state for local and remote video streams, call connection status, and video/audio controls like microphone, speaker, and camera.
+
+- **`useEffect` Hooks:**
+  - Handles setting up the peer connection and managing states like track changes, ICE candidates, and connection statuses.
+  - Cleans up media streams and stops the call when the component loses focus.
+
+- **Peer Connection:**
+  - Uses `RTCPeerConnection` to handle signaling, tracks, and media streaming.
+
+- **Media Stream Management:**
+  - Manages both local and remote streams using `getUserMedia` to access video/audio and updates `RTCPeerConnection` tracks.
+
+- **Permissions & Call Setup:**
+  - Ensures that required permissions (audio/video) are granted before starting the call.
+  - Starts the call with media settings and sets up the local peer connection.
+
+- **Call Control:**
+  - Includes functions for toggling microphone, speaker, camera, and camera mode, as well as controlling video scaling and switching between front/back cameras.
+
+This hook encapsulates the logic for both initiating and receiving video calls with WebRTC, managing video streams, and controlling call settings.
+
+------
 
 #### File: `src/screens/VideoCallScreen.js`
 ```javascript
@@ -660,3 +642,5 @@ const styles = StyleSheet.create({
 ```
 
 #### Explanation
+
+------

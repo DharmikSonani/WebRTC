@@ -99,6 +99,26 @@ This section explains the setup and implementation of handling video call permis
 #### Required Dependencies
 - **react-native-permissions:** To manage and request permissions for camera and microphone.
 
+#### Required Permissions Setup : Android (AndroidManifest.xml)
+
+Ensure you have the necessary permissions in `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+```
+
+#### Required Permissions Setup : iOS (Info.plist)
+
+Add the following to `Info.plist`:
+
+```xml
+<key>NSCameraUsageDescription</key>
+<string>Your app needs camera access for video calls.</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>Your app needs microphone access for video calls.</string>
+```
+
 #### Code Implementation `src/hooks/useVideoCallPermissions.js`
 ```javascript
 import { useState, useEffect } from 'react';

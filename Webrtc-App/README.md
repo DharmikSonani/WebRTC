@@ -674,5 +674,3 @@ const styles = StyleSheet.create({
   - Custom styles for layout and button design, including a floating local video view and call control buttons at the bottom of the screen.
 
 This file is a complete UI and logic setup for a video call, including signaling, media streaming, and call controls.
-
-------

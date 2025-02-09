@@ -18,7 +18,7 @@ This document outlines the setup and implementation of the frontend for the WebR
 This section explains the setup and implementation of handling video call permissions in the WebRTC app.
 
 #### Required Dependencies
-- **[react-native-permissions](https://www.npmjs.com/package/react-native-permissions):** To manage and request permissions for camera and microphone.
+- **[react-native-permissions](https://www.npmjs.com/package/react-native-permissions)** - To manage and request permissions for camera and microphone.
 
 #### Required Permissions Setup : Android (AndroidManifest.xml)
 

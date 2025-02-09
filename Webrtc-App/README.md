@@ -192,7 +192,6 @@ This section explains how WebRTC is configured for making and receiving video ca
 - **usePeerConnection:** Custom hook to manage peer connection.
 
 #### Code Implementation `src/hooks/useWebrtcForVC.js`
-
 ```javascript
 import { useEffect, useState } from "react";
 import useVideoCallPermissions from "./useVideoCallPermissions";
@@ -392,11 +391,20 @@ export const useWebrtcForVC = ({
 This hook encapsulates the logic for both initiating and receiving video calls with WebRTC, managing video streams, and controlling call settings.
 
 ------
+### 4. Video Call Screen Setup
 
-#### File: `src/screens/VideoCallScreen.js`
+This section explains the setup and implementation of the video call UI in the WebRTC app.
+
+#### Required Dependencies
+- **react-native-webrtc:** To handle video and audio streams for WebRTC.
+- **react-native-incall-manager:** To manage incoming call sounds (e.g., ringtone).
+- **react-navigation:** For navigating between screens.
+- **react-native-permissions:** To handle permissions for camera and microphone (if required).
+
+#### Code Implementation `src/screens/VideoCallScreen.js`
 ```javascript
-import { Alert, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useEffect } from 'react'
+import { Alert, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect } from 'react';
 import { RTCView } from 'react-native-webrtc';
 import socketServices from '../api/socketServices';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -408,12 +416,12 @@ import { sockets } from '../api/helper';
 const { width, height } = Dimensions.get('screen');
 
 const VideoCallScreen = () => {
-
     const route = useRoute();
     const navigation = useNavigation();
 
     const { localUserId, remoteUserId } = route?.params;
 
+    // Socket events for video call signaling
     const onCreateOffer = (offer) => {
         socketServices.emit(sockets.VideoCall.offer, {
             from: localUserId,
@@ -446,13 +454,11 @@ const VideoCallScreen = () => {
         micEnable,
         speakerEnable,
         frontCameraMode,
-
         onStartCall,
         onCallAccept,
         onViewScaleChange,
         onToggleMic,
         onToggleSpeaker,
-
         handleAnswer,
         handleCandidate,
     } = useWebrtcForVC({
@@ -461,10 +467,9 @@ const VideoCallScreen = () => {
         onAnswerOffer,
     });
 
-    // Socket
+    // Socket communication setup
     useEffect(() => {
         socketServices.emit(sockets.JoinSocket, localUserId);
-
         socketServices.on(sockets.VideoCall.offer, handleIncomingCall);
         socketServices.on(sockets.VideoCall.answer, handleAnswer);
         socketServices.on(sockets.VideoCall.candidate, handleCandidate);
@@ -476,15 +481,17 @@ const VideoCallScreen = () => {
             socketServices.removeListener(sockets.VideoCall.answer);
             socketServices.removeListener(sockets.VideoCall.candidate);
             socketServices.removeListener(sockets.VideoCall.hangup);
-        }
-    }, [])
+        };
+    }, []);
 
+    // Handle hangup action
     const onHangUpPress = () => {
         InCallManager.stopRingtone();
         socketServices.emit(sockets.VideoCall.hangup, { from: localUserId, to: remoteUserId });
         navigation.canGoBack() && navigation.goBack();
     };
 
+    // Handle incoming call alert
     const handleIncomingCall = (data) => {
         InCallManager.startRingtone();
         Alert.alert('Incoming Call', 'Accept the call?', [
@@ -500,6 +507,7 @@ const VideoCallScreen = () => {
         ]);
     }
 
+    // Handle remote user hangup
     const handleRemoteHangup = () => {
         try {
             Alert.alert('Call Ended', 'Call has been ended.');
@@ -581,7 +589,7 @@ const VideoCallScreen = () => {
     )
 }
 
-export default VideoCallScreen
+export default VideoCallScreen;
 
 const styles = StyleSheet.create({
     Container: {
@@ -638,9 +646,33 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '800',
     },
-})
+});
 ```
 
 #### Explanation
+- **State and Variables:**
+  - `localUserId` and `remoteUserId`: Retrieved from the route params to handle signaling between two users.
+  - `localStream`, `remoteStream`, `callConnected`: Managed by `useWebrtcForVC` to track media streams and call state.
+  - `isBigScaleLocalView`, `micEnable`, `speakerEnable`, `frontCameraMode`: State variables controlling the appearance and functionality of the call (e.g., mirror effect, scaling).
+  
+- **Socket Communication (`useEffect`):**
+  - Emits socket events to join and leave the call room and sets up listeners for incoming call signaling (offer, answer, candidate, hangup).
+  - Ensures that the relevant socket listeners are removed when the component unmounts.
+
+- **Video Call Flow:**
+  - `onCreateOffer`, `onAnswerOffer`, `onIceCandidate`: Functions to handle WebRTC signaling for offer creation, offer answering, and ICE candidate exchange.
+  - `onHangUpPress`: Ends the call by emitting a `hangup` signal and navigating back to the previous screen.
+  - `handleIncomingCall`: Handles incoming call notifications, showing an alert for the user to accept or reject the call.
+  - `handleRemoteHangup`: Displays an alert when the remote user ends the call.
+
+- **UI Elements:**
+  - **RTCView Components:** Display the local and remote video streams using `RTCView`.
+  - **Draggable Local View:** The local video view can be dragged around the screen using `DraggableView`.
+  - **Call Control Buttons:** Buttons for toggling microphone, speaker, and ending the call. The buttons change their appearance based on the current state (enabled/disabled).
+
+- **Style:** 
+  - Custom styles for layout and button design, including a floating local video view and call control buttons at the bottom of the screen.
+
+This file is a complete UI and logic setup for a video call, including signaling, media streaming, and call controls.
 
 ------

@@ -273,3 +273,141 @@ export const useFCM = () => {
 This hook simplifies FCM token retrieval and ensures the app has the necessary permissions for push notifications.
 
 ------
+
+### 4. Notification Handling Setup
+
+This section explains the setup and implementation of handling notifications in the React Native app using Firebase Cloud Messaging (FCM) and Notifee.
+
+#### Required Dependencies
+- **[@react-native-firebase/messaging](https://rnfirebase.io/messaging/usage)** - To manage push notifications.
+- **[notifee](https://notifee.app/react-native/docs/overview)** - To handle and display local notifications.
+
+#### Code Implementation [`src/hooks/notification/useNotification.js`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/notification/useNotification.js)
+```javascript
+import messaging from '@react-native-firebase/messaging';
+import notifee, { EventType } from '@notifee/react-native';
+import { useCallNotification } from '../video-call/useCallNotification';
+import { Platform } from 'react-native';
+
+export const useNotification = ({
+    navigationRef,
+}) => {
+    var timeoutId = '';
+
+    const clearNotificationByChannelId = async (channelId) => {
+        const notifications = await notifee.getDisplayedNotifications();
+
+        const incomingCallNotifications = notifications.filter((notification) => {
+            if (Platform.OS == 'android') { return notification.notification.android.channelId == channelId }
+            if (Platform.OS == 'ios') { return notification.notification.ios.categoryId == channelId }
+        });
+
+        for (const notification of incomingCallNotifications) {
+            await notifee.cancelNotification(notification.id);
+        }
+    }
+
+    const {
+        handleIncomingCallNotification,
+        handleMissCallNotification,
+        handleCallAccept,
+        handleCallReject
+    } = useCallNotification({
+        navigationRef,
+        clearIncomingCallNotification: clearNotificationByChannelId,
+    });
+
+    const handleNotification = async (remoteMessage) => {
+        const data = remoteMessage?.data;
+
+        switch (data?.type) {
+            case 'incoming-call':
+                await handleIncomingCallNotification(data)
+                break;
+            case 'miss-call':
+                await handleMissCallNotification(data)
+                break;
+            default:
+                break;
+        }
+    }
+
+    messaging().onMessage((remoteMessage) => {
+        handleNotification(remoteMessage);
+    });
+
+    notifee.onForegroundEvent(async ({ type, detail }) => {
+        if (type === EventType.ACTION_PRESS) {
+            if (detail.pressAction?.id === 'accept') {
+                handleCallAccept(detail.notification?.data);
+            } else if (detail.pressAction?.id === 'reject') {
+                handleCallReject(detail.notification?.data);
+            }
+            await notifee.cancelNotification(detail.notification?.id);
+        }
+        if (type === EventType.DISMISSED) {
+            handleCallReject(detail.notification?.data);
+            await notifee.cancelNotification(detail.notification?.id);
+        }
+    });
+
+    messaging().setBackgroundMessageHandler((remoteMessage) => {
+        handleNotification(remoteMessage);
+        return Promise.resolve();
+    });
+
+    notifee.onBackgroundEvent(async ({ type, detail }) => {
+        if (type === EventType.ACTION_PRESS) {
+            if (detail.pressAction?.id === 'accept') {
+                if (timeoutId) clearTimeout(timeoutId);
+                if (navigationRef?.current?.isReady()) {
+                    handleCallAccept(detail.notification?.data, detail.notification?.id);
+                } else {
+                    timeoutId = setTimeout(() => {
+                        handleCallAccept(detail.notification?.data);
+                    }, 1000);
+                }
+            } else if (detail.pressAction?.id === 'reject') {
+                handleCallReject(detail.notification?.data);
+            }
+            await notifee.cancelNotification(detail.notification?.id);
+        }
+        if (type === EventType.DISMISSED) {
+            handleCallReject(detail.notification?.data);
+            await notifee.cancelNotification(detail.notification?.id);
+        }
+    });
+
+    const requestNotificationPermission = async () => { await notifee.requestPermission() };
+
+    return { requestNotificationPermission, }
+};
+```
+
+#### Explanation
+- **`clearNotificationByChannelId` Function:**
+  - Fetches all displayed notifications and filters them based on channel ID.
+  - Cancels notifications that match the channel ID.
+
+- **Handling Different Notification Types:**
+  - Uses `handleIncomingCallNotification` for incoming calls.
+  - Uses `handleMissCallNotification` for missed calls.
+  - Processes notifications using `handleNotification`.
+
+- **Foreground Notification Handling:**
+  - Uses `messaging().onMessage` to handle notifications while the app is open.
+  - Uses `notifee.onForegroundEvent` to handle notification actions (accept/reject).
+
+- **Background Notification Handling:**
+  - Uses `messaging().setBackgroundMessageHandler` for background notifications.
+  - Uses `notifee.onBackgroundEvent` to handle notification actions.
+
+- **Requesting Notification Permissions:**
+  - Uses `notifee.requestPermission` to request notification permissions.
+
+- **Return Values:**
+  - Returns `requestNotificationPermission` to manually request permissions.
+
+This implementation ensures proper handling of notifications across different app states: foreground, background, and app kill mode.
+
+------

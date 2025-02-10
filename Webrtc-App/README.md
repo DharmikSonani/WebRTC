@@ -875,3 +875,359 @@ export const useWebrtcForVC = ({
 This hook is designed to manage the complete video call lifecycle, including permissions, stream management, and WebRTC signaling. Use it in your component by calling `useWebrtcForVC()` and passing the necessary callbacks for `onCreateOffer`, `onAnswerOffer`, and `onIceCandidate`.
 
 ------
+
+### 7. App Component
+
+This component is the entry point for the application, responsible for setting up global services such as socket connection and notification permissions. It also manages navigation using React Navigation.
+
+#### Required Dependencies:
+- **[@react-navigation/native](https://reactnavigation.org/docs/getting-started/)** - Navigation library used for managing app navigation.
+- **[socket.io-client](https://www.npmjs.com/package/socket.io-client)** - Socket service for real-time communication.
+
+#### Code Implementation [`src/App.js`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/App.js)
+
+```javascript
+import React, { useEffect } from 'react';
+import { StatusBar } from 'react-native';
+import { createNavigationContainerRef, NavigationContainer } from '@react-navigation/native';
+import { NavigationHandler } from './routes';
+import socketServices from './api/socketServices';
+import { useNotification } from './hooks/notification/useNotification';
+
+const navigationRef = createNavigationContainerRef();
+
+// Notification Permission Request
+const { requestNotificationPermission } = useNotification({ navigationRef });
+
+const App = () => {
+
+  useEffect(() => {
+    // Initialize Socket if not already connected
+    if (!socketServices?.socket?.connected) {
+      socketServices.initializeSocket();
+    }
+    // Request for Notification Permissions
+    requestNotificationPermission();
+
+    // Cleanup on unmount: Disconnect socket if connected
+    return () => { 
+      if (socketServices?.socket?.connected) {
+        socketServices?.socket?.disconnect();
+      }
+    }
+  }, []);
+
+  return (
+    <>
+      {/* Hides the status bar and makes it translucent */}
+      <StatusBar hidden translucent />
+      
+      {/* Navigation Container: Manages the app's navigation */}
+      <NavigationContainer ref={navigationRef}>
+        <NavigationHandler />
+      </NavigationContainer>
+    </>
+  );
+};
+
+export default App;
+```
+
+#### Explanation:
+
+1. **Navigation Setup:**
+   - `createNavigationContainerRef`: Creates a reference for the navigation container, allowing you to control navigation from anywhere in the app.
+   - `NavigationContainer`: Wraps the entire app's navigation setup to manage navigation state.
+   - `NavigationHandler`: A component (defined in your `routes.js`) that handles routing logic based on the navigation state.
+
+2. **Socket Services:**
+   - `socketServices.initializeSocket()`: Initializes the socket connection if it's not already connected.
+   - Inside the `useEffect`, the socket is initialized when the app starts, and the cleanup function disconnects it when the app is unmounted to prevent memory leaks and unnecessary connections.
+
+3. **Notification Permissions:**
+   - `requestNotificationPermission`: Requests permission to send notifications to the user, defined in the `useNotification` custom hook.
+
+4. **StatusBar:**
+   - The `StatusBar` component is used to hide the status bar and make it translucent, ensuring that it doesn't interfere with the app's UI.
+
+#### Usage
+This file is the root component of your app and integrates the socket service, notification permissions, and navigation management. It should be used as the main entry point in your app’s entry file (e.g., `index.js`).
+
+#### Flow:
+- On app load:
+  1. It checks if the socket is connected, and if not, it initializes the socket connection.
+  2. Requests permission for notifications.
+  3. Manages the status bar to be hidden and translucent.
+
+- On cleanup (app unmount):
+  1. Disconnects the socket connection if it's active.
+
+------
+
+### 8. **VideoCallScreen Component**
+
+This component represents a video call screen for both the caller and the receiver. It handles the local and remote video streams, call controls (e.g., mic, speaker, hang up), and socket events for a real-time video call experience.
+
+#### Required Dependencies:
+- **[react-native-webrtc](https://github.com/react-native-webrtc/react-native-webrtc)** - WebRTC implementation for React Native
+- **[socket.io-client](https://www.npmjs.com/package/socket.io-client)** - Client-side WebSocket library
+- **[react-native-incall-manager](https://github.com/react-native-webrtc/react-native-incall-manager)** - Manages audio/video call settings
+- **[useFCM Hook](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/notification/useFCM.js)** - Firebase Cloud Messaging (FCM) for push notifications.
+
+#### Code Implementation [`src/screens/VideoCallScreen.js`](https://github.com/your-repo/Project-Name/src/screens/VideoCallScreen.js)
+
+```javascript
+import { Alert, Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { RTCView } from 'react-native-webrtc';
+import socketServices from '../api/socketServices';
+import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
+import DraggableView from '../components/DraggableView';
+import InCallManager from 'react-native-incall-manager';
+import { useFCM } from '../hooks/notification/useFCM';
+import { useWebrtcForVC } from '../hooks/video-call/useWebrtcForVC';
+import { sockets } from '../api/helper';
+
+const { width, height } = Dimensions.get('window');
+
+const VideoCallScreen = () => {
+    const route = useRoute();
+    const navigation = useNavigation();
+    const isFocused = useIsFocused();
+    const { localUserId, remoteUserId, type } = route?.params;
+
+    const {
+        localStream,
+        remoteStream,
+        callConnected,
+        isBigScaleLocalView,
+        micEnable,
+        speakerEnable,
+        frontCameraMode,
+        onStartCall,
+        onCallAccept,
+        onViewScaleChange,
+        onToggleMic,
+        onToggleSpeaker,
+        handleAnswer,
+        handleCandidate,
+        startLocalStream,
+    } = useWebrtcForVC({
+        onIceCandidate: (candidate) => socketServices.emit(sockets.VideoCall.candidate, { _from: localUserId, _to: remoteUserId, candidate }),
+        onCreateOffer: (offer) => socketServices.emit(sockets.VideoCall.offer, { _from: localUserId, _to: remoteUserId, offer }),
+        onAnswerOffer: (answer) => socketServices.emit(sockets.VideoCall.answer, { _from: localUserId, _to: remoteUserId, answer }),
+    });
+
+    const { fcmToken } = useFCM();
+
+    // Socket Connection and Event Handlers
+    useEffect(() => {
+        if (fcmToken || Platform.OS == 'ios') {
+            socketServices.emit(sockets.JoinSocket, { userId: localUserId, fcmToken: fcmToken ?? '' });
+
+            socketServices.on(sockets.VideoCall.answer, handleAnswer);
+            socketServices.on(sockets.VideoCall.candidate, handleCandidate);
+            socketServices.on(sockets.VideoCall.hangup, handleRemoteHangup);
+
+            if (type === 'callee') {
+                startLocalStream();
+                InCallManager.stopRingtone();
+                socketServices.emit(sockets.VideoCall.acceptCall, { _from: localUserId, _to: remoteUserId });
+                socketServices.on(sockets.VideoCall.offer, (data) => onCallAccept({ offer: data?.offer }));
+            }
+
+            if (type === 'caller') {
+                socketServices.on(sockets.VideoCall.acceptCall, onStartCall);
+                socketServices.on(sockets.VideoCall.declineCall, handleRemoteHangup);
+            }
+
+            return () => {
+                socketServices.emit(sockets.LeaveSocket, localUserId);
+                socketServices.removeListener(sockets.VideoCall.acceptCall);
+                socketServices.removeListener(sockets.VideoCall.declineCall);
+                socketServices.removeListener(sockets.VideoCall.offer);
+                socketServices.removeListener(sockets.VideoCall.answer);
+                socketServices.removeListener(sockets.VideoCall.candidate);
+                socketServices.removeListener(sockets.VideoCall.hangup);
+            };
+        }
+    }, [fcmToken]);
+
+    useEffect(() => {
+        if (!isFocused) onHangUp();
+    }, [isFocused]);
+
+    // Handle Remote Hang Up
+    const handleRemoteHangup = () => {
+        try {
+            Alert.alert('Call Ended', 'Call has been ended.');
+            navigation.canGoBack() && navigation.goBack();
+        } catch (error) {
+            console.log(`Handle Remote Hangup Error: ${error}`);
+        }
+    };
+
+    // Start the call or initiate incoming call request
+    const onSendCallRequest = () => {
+        startLocalStream();
+        socketServices.emit(sockets.VideoCall.incomingCallNotification, { _from: localUserId, _to: remoteUserId });
+    };
+
+    // Hang Up Functionality
+    const onHangUp = () => {
+        InCallManager.stopRingtone();
+        socketServices.emit(sockets.VideoCall.hangup, { _from: localUserId, _to: remoteUserId });
+        if (!callConnected) socketServices.emit(sockets.VideoCall.missCallNotification, { _from: localUserId, _to: remoteUserId });
+    };
+
+    const onHangUpPress = () => {
+        navigation.canGoBack() && navigation.goBack();
+    };
+
+    return (
+        <View style={styles.Container}>
+            {
+                (callConnected && localStream && remoteStream) ?
+                    <>
+                        <View style={styles.RemoteVideo}>
+                            <RTCView
+                                streamURL={isBigScaleLocalView ? localStream.toURL() : remoteStream.toURL()}
+                                style={styles.RTCViewStyle}
+                                objectFit="cover"
+                                mirror={isBigScaleLocalView ? frontCameraMode : false}
+                            />
+                        </View>
+                        <View style={styles.LocalViewContainer}>
+                            <DraggableView
+                                x={width}
+                                y={height - 140}
+                                border={25}
+                                bounceHorizontal
+                                bounceVertical
+                            >
+                                <TouchableOpacity
+                                    style={styles.LocalVideo}
+                                    activeOpacity={1}
+                                    onPress={onViewScaleChange}
+                                >
+                                    <RTCView
+                                        streamURL={isBigScaleLocalView ? remoteStream.toURL() : localStream.toURL()}
+                                        style={styles.RTCViewStyle}
+                                        objectFit="cover"
+                                        mirror={isBigScaleLocalView ? false : frontCameraMode}
+                                    />
+                                </TouchableOpacity>
+                            </DraggableView>
+                        </View>
+                    </>
+                    :
+                    localStream &&
+                    <View style={styles.RemoteVideo}>
+                        <RTCView
+                            streamURL={localStream.toURL()}
+                            style={styles.RTCViewStyle}
+                            objectFit="cover"
+                            mirror={frontCameraMode}
+                        />
+                    </View>
+            }
+
+            <View style={styles.ButtonContainer}>
+                {
+                    (remoteStream || localStream) ?
+                        <>
+                            <TouchableOpacity style={[styles.Button, !speakerEnable && styles.HangUpButton]} onPress={onToggleSpeaker} activeOpacity={1}>
+                                <Text style={styles.ButtonText}>{speakerEnable ? 'SE' : 'SD'}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.Button, styles.HangUpButton]} onPress={onHangUpPress}>
+                                <Text style={styles.ButtonText}>Hang Up</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.Button, !micEnable && styles.HangUpButton]} onPress={onToggleMic} activeOpacity={1}>
+                                <Text style={styles.ButtonText}>{micEnable ? 'ME' : 'MD'}</Text>
+                            </TouchableOpacity>
+                        </>
+                        :
+                        <TouchableOpacity style={styles.Button} onPress={onSendCallRequest}>
+                            <Text style={styles.ButtonText}>Start</Text>
+                        </TouchableOpacity>
+                }
+            </View>
+        </View>
+    );
+};
+
+export default VideoCallScreen;
+
+const styles = StyleSheet.create({
+    Container: {
+        flex: 1,
+        backgroundColor: '#FFF',
+    },
+    RTCViewStyle: {
+        width: '100%',
+        height: '100%',
+    },
+    RemoteVideo: {
+        width: '100%',
+        height: '100%',
+        position: 'absolute',
+        zIndex: 1,
+    },
+    LocalViewContainer: {
+        width: width,
+        marginTop: 45,
+        position: 'absolute',
+        zIndex: 10,
+        padding: 25,
+        height: height - 140,
+    },
+    LocalVideo: {
+        width: 100,
+        aspectRatio: 1 / 1.5,
+        borderRadius: 20,
+        overflow: 'hidden',
+        zIndex: 100,
+    },
+    ButtonContainer: {
+        zIndex: 10,
+        position: 'absolute',
+        bottom: 50,
+        flexDirection: 'row',
+        justifyContent: 'space-evenly',
+        alignItems: 'center',
+        width: '100%',
+    },
+    Button: {
+        backgroundColor: '#4CAF50',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    HangUpButton: {
+        backgroundColor: '#F44336',
+    },
+    ButtonText: {
+        color: '#FFF',
+        fontSize: 16,
+        fontWeight: '800',
+    },
+});
+```
+
+#### Explanation:
+
+1. **WebRTC Setup:**
+   - **`RTCView`** is used to display local and remote video streams.
+   - **`useWebrtcForVC`** custom hook handles setting up local and remote streams, managing microphone and speaker, and other video call functionalities.
+
+2. **Socket Event Handling:**
+   - The component listens for socket events related to video call offers, answers, candidates, and hangups. It sends appropriate data through sockets to establish the video call.
+
+3. **UI Elements:**
+   - The [`DraggableView`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/components/DraggableView.js) component allows the local video to be draggable on the screen, and its size can be toggled by clicking on it.
+   - Buttons for starting the call, toggling microphone/speaker, and hanging up are provided at the bottom of the screen.
+
+4. **Call Management:**
+   - Handles incoming call requests, call acceptance, and hangups, with notifications being sent to the server and FCM tokens used for incoming notifications.

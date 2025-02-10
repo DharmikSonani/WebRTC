@@ -197,497 +197,79 @@ This hook encapsulates the WebRTC peer connection logic and makes it reusable ac
 
 ------
 
-### 3. WebRTC Setup for Video Call
+### 3. Firebase Cloud Messaging (FCM) Setup
 
-This section explains how WebRTC is configured for making and receiving video calls in the WebRTC-based video call app. The hook handles permissions, media streams, peer connections, and call management.
+This section explains the setup and implementation of handling push notifications in the React Native app using Firebase Cloud Messaging (FCM).
 
 #### Required Dependencies
-- **[react-native-incall-manager](https://github.com/react-native-webrtc/react-native-incall-manager)** - Manages the in-call status (such as speakerphone and screen settings).
-- **[react-native-webrtc](https://github.com/react-native-webrtc/react-native-webrtc)** - Provides WebRTC functionalities for media streaming and peer connection.
-- **[react-navigation](https://reactnavigation.org/docs/getting-started/)** - Used for handling focus state in navigation.
-- **[useVideoCallPermissions](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/video-call/useVideoCallPermissions.js)** - Custom hook to manage permissions.
-- **[usePeerConnection](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/video-call/usePeerConnection.js)** - Custom hook to manage peer connection.
+- **[@react-native-firebase/messaging](https://rnfirebase.io/messaging/usage)** - To handle push notifications in the React Native app.
 
-#### Code Implementation [`src/hooks/useWebrtcForVC.js`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/video-call/useWebrtcForVC.js)
+#### Firebase Setup
+Before implementing FCM, ensure that Firebase is properly set up in your React Native project:
+1. Install Firebase dependencies:
+   ```sh
+   npm i @react-native-firebase/app @react-native-firebase/messaging
+   ```
+2. Configure Firebase in your project by adding the necessary Firebase configuration files (`google-services.json` for Android and `GoogleService-Info.plist` for iOS).
+3. Enable Firebase Cloud Messaging in the Firebase console.
+
+#### Code Implementation [`src/hooks/notification/useFCM.js`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/notification/useFCM.js)
 ```javascript
-import { useEffect, useState } from "react";
-import useVideoCallPermissions from "./useVideoCallPermissions";
-import { usePeerConnection } from "./usePeerConnection";
-import InCallManager from 'react-native-incall-manager';
-import { mediaDevices } from "react-native-webrtc";
-import { useIsFocused } from "@react-navigation/native";
+import { useState, useEffect } from 'react';
+import messaging from '@react-native-firebase/messaging';
 
-const videoResolutions = {
-    // Different video resolutions for quality management
-    SD_360p: { mandatory: { minWidth: 640, minHeight: 360, minFrameRate: 15 } },
-    HD_720p: { mandatory: { minWidth: 1280, minHeight: 720, minFrameRate: 30 } },
-    FHD_1080p: { mandatory: { minWidth: 1920, minHeight: 1080, minFrameRate: 30 } },
-    QHD_1440p: { mandatory: { minWidth: 2560, minHeight: 1440, minFrameRate: 60 } },
-    UHD_4K: { mandatory: { minWidth: 3840, minHeight: 2160, minFrameRate: 60 } },
-    UHD_8K: { mandatory: { minWidth: 7680, minHeight: 4320, minFrameRate: 60 } },
-};
+export const useFCM = () => {
+    const [fcmToken, setFcmToken] = useState('');
 
-export const useWebrtcForVC = ({
-    onCreateOffer = (offer) => { console.log(`onCreateOffer : ${offer}`); },
-    onAnswerOffer = (answer) => { console.log(`onAnswerOffer : ${answer}`); },
-    onIceCandidate = (candidate) => { console.log(`onIceCandidate : ${candidate}`); },
-}) => {
-
-    // States and Hooks
-    const isFocus = useIsFocused(); // For navigation focus tracking
-    const { permissionsGranted, checkAndRequestPermissions } = useVideoCallPermissions();
-    const { peerConnection } = usePeerConnection();
-
-    const [localStream, setLocalStream] = useState(null);
-    const [remoteStream, setRemoteStream] = useState(null);
-    const [callConnected, setCallConnected] = useState(false);
-    const [isBigScaleLocalView, setIsBigScaleLocalView] = useState(false);
-    const [micEnable, setMicEnable] = useState(true);
-    const [speakerEnable, setSpeakerEnable] = useState(true);
-    const [cameraEnable, setCameraEnable] = useState(true);
-    const [frontCameraMode, setFrontCameraMode] = useState(true);
-
-    // Handle peer connection states
     useEffect(() => {
-        const pc = peerConnection.current;
-        if (pc) {
-            pc.ontrack = (event) => { setRemoteStream(event.streams[0]); };
-            pc.onicecandidate = (event) => { event.candidate && onIceCandidate(event.candidate); };
-            pc.oniceconnectionstatechange = () => { console.log('ICE Connection State:', pc.iceConnectionState); };
-            pc.onconnectionstatechange = () => { console.log('Connection State:', pc.connectionState); };
-            pc.onsignalingstatechange = () => { console.log('Signaling State:', pc.signalingState); };
-        }
+        messaging()
+            .requestPermission()
+            ?.then(async () => {
+                messaging()
+                    ?.getToken()
+                    ?.then(token => {
+                        setFcmToken(token);
+                    })
+                    ?.catch(error => {
+                        console.log('Error getting FCM token:', error);
+                    });
+            })
+            ?.catch(error => {
+                console.log('Notification permission denied', error);
+            });
     }, []);
 
-    // Cleanup when the component loses focus
-    useEffect(() => { if (!isFocus) cleanUpStream(); }, [isFocus]);
-
-    // Handle outgoing call (Caller)
-    const onStartCall = async () => {
-        try {
-            if (!permissionsGranted) {
-                const permission = await checkAndRequestPermissions();
-                if (!permission) return;
-            }
-
-            InCallManager.setKeepScreenOn(true);
-            InCallManager.setSpeakerphoneOn(true);
-            InCallManager.start({ media: 'video' });
-
-            const stream = await mediaDevices.getUserMedia({ audio: true, video: videoResolutions.UHD_8K });
-            setLocalStream(stream);
-
-            stream.getTracks().forEach((track) => peerConnection.current.addTrack(track, stream));
-
-            const offer = await peerConnection.current.createOffer();
-            await peerConnection.current.setLocalDescription(offer);
-
-            onCreateOffer(offer);
-        } catch (error) {
-            console.log('Local Stream error:', error);
-        }
-    };
-
-    // Handle incoming call (Callee)
-    const onCallAccept = async (data) => {
-        try {
-            await peerConnection.current.setRemoteDescription(data.offer);
-            InCallManager.setSpeakerphoneOn(true);
-            InCallManager.setKeepScreenOn(true);
-            InCallManager.start({ media: 'video' });
-
-            const stream = await mediaDevices.getUserMedia({ audio: true, video: videoResolutions.UHD_8K });
-            setLocalStream(stream);
-
-            stream.getTracks().forEach((track) => peerConnection.current.addTrack(track, stream));
-
-            const answer = await peerConnection.current.createAnswer();
-            await peerConnection.current.setLocalDescription(answer);
-
-            onAnswerOffer(answer);
-            setCallConnected(true);
-        } catch (error) {
-            console.log('Incoming Call Error:', error);
-        }
-    };
-
-    // Answer the call
-    const handleAnswer = async (data) => {
-        try {
-            await peerConnection.current.setRemoteDescription(data.answer);
-            setCallConnected(true);
-        } catch (error) {
-            console.log('Handle Answer Error:', error);
-        }
-    };
-
-    // Handle ICE candidate
-    const handleCandidate = (data) => {
-        try {
-            data?.candidate && peerConnection.current.addIceCandidate(data.candidate);
-        } catch (error) {
-            console.log('Handle Candidate Error:', error);
-        }
-    };
-
-    // Clean up media streams
-    const cleanUpStream = async () => {
-        stopMediaStream(localStream);
-        stopMediaStream(remoteStream);
-        setLocalStream(null);
-        setRemoteStream(null);
-        InCallManager.setKeepScreenOn(false);
-        InCallManager.stop();
-    };
-
-    const stopMediaStream = (stream) => { stream && stream.getTracks().forEach((track) => track.stop()); };
-
-    // Toggle controls (microphone, speaker, camera)
-    const onToggleMic = () => { setMicEnable((prev) => !prev); toggleAudio(localStream); };
-    const onToggleSpeaker = () => { setSpeakerEnable((prev) => !prev); toggleAudio(remoteStream); };
-    const onToggleCamera = async () => { setCameraEnable((prev) => !prev); toggleVideo(localStream); };
-    const onSwitchCameraMode = async () => {
-        if (localStream) {
-            localStream?.getVideoTracks()?.forEach(track => track._switchCamera());
-            setFrontCameraMode((prev) => !prev);
-        }
-    };
-
-    const toggleAudio = (stream) => { if (stream) stream.getAudioTracks().forEach(track => track.enabled = !track.enabled); };
-    const toggleVideo = (stream) => { if (stream) stream.getVideoTracks().forEach(track => track.enabled = !track.enabled); };
-
-    // View scaling for local video
-    const onViewScaleChange = () => { setIsBigScaleLocalView((prev) => !prev); };
-
-    return {
-        localStream,
-        remoteStream,
-        callConnected,
-        isBigScaleLocalView,
-        micEnable,
-        speakerEnable,
-        cameraEnable,
-        frontCameraMode,
-
-        onStartCall,
-        onCallAccept,
-        onViewScaleChange,
-        onToggleMic,
-        onToggleSpeaker,
-        onToggleCamera,
-        onSwitchCameraMode,
-
-        handleAnswer,
-        handleCandidate,
-    };
+    return { fcmToken };
 };
 ```
 
 #### Explanation
+- **State Initialization:**
+  - `fcmToken`: Stores the Firebase Cloud Messaging token. Initially set to an empty string.
 
-- **State Variables:**
-  - Manages state for local and remote video streams, call connection status, and video/audio controls like microphone, speaker, and camera.
+- **`useEffect` Hook:**
+  - Requests notification permission when the component mounts.
+  - If permission is granted, retrieves the FCM token using `messaging().getToken()`.
+  - Stores the token in state (`setFcmToken`).
+  - Logs errors if the request or token retrieval fails.
 
-- **`useEffect` Hooks:**
-  - Handles setting up the peer connection and managing states like track changes, ICE candidates, and connection statuses.
-  - Cleans up media streams and stops the call when the component loses focus.
+- **Return Values:**
+  - Returns `fcmToken`, which contains the device's unique push notification token.
 
-- **Peer Connection:**
-  - Uses `RTCPeerConnection` to handle signaling, tracks, and media streaming.
+#### Additional Considerations
+- **Handling Token Refresh:**
+  - The FCM token may change over time. To handle token updates, listen for token refresh events:
+    ```javascript
+    useEffect(() => {
+        const unsubscribe = messaging().onTokenRefresh(token => {
+            setFcmToken(token);
+        });
+        return unsubscribe;
+    }, []);
+    ```
+- **Handling Background and Quit State Notifications:**
+  - To handle incoming notifications when the app is in the background or killed, set up appropriate listeners using `messaging().onNotificationOpenedApp` and `messaging().setBackgroundMessageHandler`.
 
-- **Media Stream Management:**
-  - Manages both local and remote streams using `getUserMedia` to access video/audio and updates `RTCPeerConnection` tracks.
-
-- **Permissions & Call Setup:**
-  - Ensures that required permissions (audio/video) are granted before starting the call.
-  - Starts the call with media settings and sets up the local peer connection.
-
-- **Call Control:**
-  - Includes functions for toggling microphone, speaker, camera, and camera mode, as well as controlling video scaling and switching between front/back cameras.
-
-This hook encapsulates the logic for both initiating and receiving video calls with WebRTC, managing video streams, and controlling call settings.
+This hook simplifies FCM token retrieval and ensures the app has the necessary permissions for push notifications.
 
 ------
-### 4. Video Call Screen Setup
-
-This section explains the setup and implementation of the video call UI in the WebRTC app.
-
-#### Required Dependencies
-- **[react-native-webrtc](https://github.com/react-native-webrtc/react-native-webrtc)** - To handle video and audio streams for WebRTC.
-- **[react-native-incall-manager](https://github.com/react-native-webrtc/react-native-incall-manager)** - To manage incoming call sounds (e.g., ringtone).
-- **[react-navigation](https://reactnavigation.org/docs/getting-started/)** - For navigating between screens.
-- **[react-native-permissions](https://www.npmjs.com/package/react-native-permissions)** - To handle permissions for camera and microphone (if required).
-
-#### Code Implementation [`src/screens/VideoCallScreen.js`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/screens/VideoCallScreen.js)
-```javascript
-import { Alert, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React, { useEffect } from 'react';
-import { RTCView } from 'react-native-webrtc';
-import socketServices from '../api/socketServices';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import DraggableView from '../components/DraggableView';
-import { useWebrtcForVC } from '../hooks/useWebrtcForVC';
-import InCallManager from 'react-native-incall-manager';
-import { sockets } from '../api/helper';
-
-const { width, height } = Dimensions.get('screen');
-
-const VideoCallScreen = () => {
-    const route = useRoute();
-    const navigation = useNavigation();
-
-    const { localUserId, remoteUserId } = route?.params;
-
-    // Socket events for video call signaling
-    const onCreateOffer = (offer) => {
-        socketServices.emit(sockets.VideoCall.offer, {
-            from: localUserId,
-            to: remoteUserId,
-            offer: offer,
-        });
-    }
-
-    const onAnswerOffer = (answer) => {
-        socketServices.emit(sockets.VideoCall.answer, {
-            from: localUserId,
-            to: remoteUserId,
-            answer: answer,
-        });
-    }
-
-    const onIceCandidate = (candidate) => {
-        socketServices.emit(sockets.VideoCall.candidate, {
-            from: localUserId,
-            to: remoteUserId,
-            candidate: candidate,
-        });
-    }
-
-    const {
-        localStream,
-        remoteStream,
-        callConnected,
-        isBigScaleLocalView,
-        micEnable,
-        speakerEnable,
-        frontCameraMode,
-        onStartCall,
-        onCallAccept,
-        onViewScaleChange,
-        onToggleMic,
-        onToggleSpeaker,
-        handleAnswer,
-        handleCandidate,
-    } = useWebrtcForVC({
-        onIceCandidate,
-        onCreateOffer,
-        onAnswerOffer,
-    });
-
-    // Socket communication setup
-    useEffect(() => {
-        socketServices.emit(sockets.JoinSocket, localUserId);
-        socketServices.on(sockets.VideoCall.offer, handleIncomingCall);
-        socketServices.on(sockets.VideoCall.answer, handleAnswer);
-        socketServices.on(sockets.VideoCall.candidate, handleCandidate);
-        socketServices.on(sockets.VideoCall.hangup, handleRemoteHangup);
-
-        return () => {
-            socketServices.emit(sockets.LeaveSocket, localUserId);
-            socketServices.removeListener(sockets.VideoCall.offer);
-            socketServices.removeListener(sockets.VideoCall.answer);
-            socketServices.removeListener(sockets.VideoCall.candidate);
-            socketServices.removeListener(sockets.VideoCall.hangup);
-        };
-    }, []);
-
-    // Handle hangup action
-    const onHangUpPress = () => {
-        InCallManager.stopRingtone();
-        socketServices.emit(sockets.VideoCall.hangup, { from: localUserId, to: remoteUserId });
-        navigation.canGoBack() && navigation.goBack();
-    };
-
-    // Handle incoming call alert
-    const handleIncomingCall = (data) => {
-        InCallManager.startRingtone();
-        Alert.alert('Incoming Call', 'Accept the call?', [
-            {
-                text: 'Reject',
-                onPress: onHangUpPress,
-                style: 'cancel',
-            },
-            {
-                text: 'Accept',
-                onPress: () => { onCallAccept(data), InCallManager.stopRingtone(); },
-            },
-        ]);
-    }
-
-    // Handle remote user hangup
-    const handleRemoteHangup = () => {
-        try {
-            Alert.alert('Call Ended', 'Call has been ended.');
-            navigation.canGoBack() && navigation.goBack();
-        } catch (error) {
-            console.log(`Handle Remote Hangup Error: ${error}`)
-        }
-    }
-
-    return (
-        <View style={styles.Container}>
-            {
-                (callConnected && localStream && remoteStream) ?
-                    <>
-                        <View style={styles.RemoteVideo}>
-                            <RTCView
-                                streamURL={isBigScaleLocalView ? localStream.toURL() : remoteStream.toURL()}
-                                style={styles.RTCViewStyle}
-                                objectFit="cover"
-                                mirror={isBigScaleLocalView ? frontCameraMode : false}
-                            />
-                        </View>
-                        <View style={styles.LocalViewContainer}>
-                            <DraggableView
-                                x={width}
-                                y={height - 140}
-                                border={25}
-                                bounceHorizontal
-                                bounceVertical
-                            >
-                                <TouchableOpacity
-                                    style={styles.LocalVideo}
-                                    activeOpacity={1}
-                                    onPress={onViewScaleChange}
-                                >
-                                    <RTCView
-                                        streamURL={isBigScaleLocalView ? remoteStream.toURL() : localStream.toURL()}
-                                        style={styles.RTCViewStyle}
-                                        objectFit="cover"
-                                        mirror={isBigScaleLocalView ? false : frontCameraMode}
-                                    />
-                                </TouchableOpacity>
-                            </DraggableView>
-                        </View>
-                    </>
-                    :
-                    localStream &&
-                    <View style={styles.RemoteVideo}>
-                        <RTCView
-                            streamURL={localStream.toURL()}
-                            style={styles.RTCViewStyle}
-                            objectFit="cover"
-                            mirror={frontCameraMode}
-                        />
-                    </View>
-            }
-
-            <View style={styles.ButtonContainer}>
-                {
-                    (remoteStream || localStream) ?
-                        <>
-                            <TouchableOpacity style={[styles.Button, !speakerEnable && styles.HangUpButton]} onPress={onToggleSpeaker} activeOpacity={1}>
-                                <Text style={styles.ButtonText}>{speakerEnable ? 'SE' : 'SD'}</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={[styles.Button, styles.HangUpButton]} onPress={onHangUpPress}>
-                                <Text style={styles.ButtonText}>Hang Up</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={[styles.Button, !micEnable && styles.HangUpButton]} onPress={onToggleMic} activeOpacity={1}>
-                                <Text style={styles.ButtonText}>{micEnable ? 'ME' : 'MD'}</Text>
-                            </TouchableOpacity>
-                        </>
-                        :
-                        <TouchableOpacity style={styles.Button} onPress={onStartCall}>
-                            <Text style={styles.ButtonText}>Start</Text>
-                        </TouchableOpacity>
-                }
-            </View>
-        </View>
-    )
-}
-
-export default VideoCallScreen;
-
-const styles = StyleSheet.create({
-    Container: {
-        flex: 1,
-        backgroundColor: '#FFF',
-    },
-    RTCViewStyle: {
-        width: '100%',
-        height: '100%',
-    },
-    RemoteVideo: {
-        width: '100%',
-        height: '100%',
-        position: 'absolute',
-        zIndex: 1,
-    },
-    LocalViewContainer: {
-        width: width,
-        marginTop: 45,
-        position: 'absolute',
-        zIndex: 10,
-        padding: 25,
-        height: height - 140,
-    },
-    LocalVideo: {
-        width: 100,
-        aspectRatio: 1 / 1.5,
-        borderRadius: 20,
-        overflow: 'hidden',
-        zIndex: 100,
-    },
-    ButtonContainer: {
-        zIndex: 10,
-        position: 'absolute',
-        bottom: 50,
-        flexDirection: 'row',
-        justifyContent: 'space-evenly',
-        alignItems: 'center',
-        width: '100%',
-    },
-    Button: {
-        backgroundColor: '#4CAF50',
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderRadius: 18,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    HangUpButton: {
-        backgroundColor: '#F44336',
-    },
-    ButtonText: {
-        color: '#FFF',
-        fontSize: 16,
-        fontWeight: '800',
-    },
-});
-```
-
-#### Explanation
-- **State and Variables:**
-  - `localUserId` and `remoteUserId`: Retrieved from the route params to handle signaling between two users.
-  - `localStream`, `remoteStream`, `callConnected`: Managed by [`useWebrtcForVC`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/video-call/useWebrtcForVC.js) to track media streams and call state.
-  - `isBigScaleLocalView`, `micEnable`, `speakerEnable`, `frontCameraMode`: State variables controlling the appearance and functionality of the call (e.g., mirror effect, scaling).
-  
-- **Socket Communication (`useEffect`):**
-  - Emits socket events to join and leave the call room and sets up listeners for incoming call signaling (offer, answer, candidate, hangup).
-  - Ensures that the relevant socket listeners are removed when the component unmounts.
-
-- **Video Call Flow:**
-  - `onCreateOffer`, `onAnswerOffer`, `onIceCandidate`: Functions to handle WebRTC signaling for offer creation, offer answering, and ICE candidate exchange.
-  - `onHangUpPress`: Ends the call by emitting a `hangup` signal and navigating back to the previous screen.
-  - `handleIncomingCall`: Handles incoming call notifications, showing an alert for the user to accept or reject the call.
-  - `handleRemoteHangup`: Displays an alert when the remote user ends the call.
-
-- **UI Elements:**
-  - **RTCView Components:** Display the local and remote video streams using `RTCView`.
-  - **Draggable Local View:** The local video view can be dragged around the screen using [`DraggableView`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/components/DraggableView.js).
-  - **Call Control Buttons:** Buttons for toggling microphone, speaker, and ending the call. The buttons change their appearance based on the current state (enabled/disabled).
-
-- **Style:** 
-  - Custom styles for layout and button design, including a floating local video view and call control buttons at the bottom of the screen.
-
-This file is a complete UI and logic setup for a video call, including signaling, media streaming, and call controls.

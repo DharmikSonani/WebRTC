@@ -945,7 +945,7 @@ export default App;
    - Inside the `useEffect`, the socket is initialized when the app starts, and the cleanup function disconnects it when the app is unmounted to prevent memory leaks and unnecessary connections.
 
 3. **Notification Permissions:**
-   - `requestNotificationPermission`: Requests permission to send notifications to the user, defined in the `useNotification` custom hook.
+   - `requestNotificationPermission`: Requests permission to send notifications to the user, defined in the [`useNotification`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/notification/useNotification.js) custom hook.
 
 4. **StatusBar:**
    - The `StatusBar` component is used to hide the status bar and make it translucent, ensuring that it doesn't interfere with the app's UI.

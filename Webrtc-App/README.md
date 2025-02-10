@@ -620,3 +620,249 @@ export const useCallNotification = ({
 
 #### Screens To Avoid
 - `notAllowedScreensForCalling`: A list of screens where video calls are not allowed (currently, `VideoCallScreen` is excluded).
+
+------
+
+### 6. WebRTC for Video Call Setup
+
+This section explains the setup and implementation for handling video calls using WebRTC in your application.
+
+#### Required Dependencies
+- **[react-native-incall-manager](https://github.com/react-native-webrtc/react-native-incall-manager)** - Manages in-call behaviors such as speakerphone and screen on during a call.
+- **[react-native-webrtc](https://github.com/react-native-webrtc/react-native-webrtc)** - Provides WebRTC functionality, allowing peer-to-peer video and audio streaming.
+- **[react-navigation](https://reactnavigation.org/docs/getting-started/)** - Used to manage screen focus to handle cleanup of resources when the screen is not in focus.
+
+#### Code Implementation [`src/hooks/video-call/useWebrtcForVC.js`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/video-call/useWebrtcForVC.js)
+
+```javascript
+import { useEffect, useState } from "react";
+import InCallManager from 'react-native-incall-manager';
+import { mediaDevices } from "react-native-webrtc";
+import { videoResolutions } from "../../utils/helper";
+import { useIsFocused } from "@react-navigation/native";
+import { usePeerConnection } from "./usePeerConnection";
+import { useVideoCallPermissions } from "./useVideoCallPermissions";
+
+export const useWebrtcForVC = ({
+    onCreateOffer = (offer) => { console.log(`onCreateOffer : ${offer}`); },
+    onAnswerOffer = (answer) => { console.log(`onAnswerOffer : ${answer}`); },
+    onIceCandidate = (candidate) => { console.log(`onIceCandidate : ${candidate}`); },
+}) => {
+    // Variables
+    const isFocus = useIsFocused();
+
+    // Custom Hooks
+    const { permissionsGranted, checkAndRequestPermissions } = useVideoCallPermissions();
+    const { peerConnection } = usePeerConnection();
+
+    // State
+    const [localStream, setLocalStream] = useState(null); // Local User Stream
+    const [remoteStream, setRemoteStream] = useState(null); // Remote User Stream
+    const [callConnected, setCallConnected] = useState(false); // Call connection state
+    const [isBigScaleLocalView, setIsBigScaleLocalView] = useState(false); // Local View Scale
+    const [micEnable, setMicEnable] = useState(true); // Microphone status
+    const [speakerEnable, setSpeakerEnable] = useState(true); // Speaker status
+    const [cameraEnable, setCameraEnable] = useState(true); // Camera status
+    const [frontCameraMode, setFrontCameraMode] = useState(true); // Camera mode (front/back)
+
+    // useEffect
+    useEffect(() => {
+        const pc = peerConnection.current;
+        if (pc) {
+            pc.ontrack = (event) => { event.streams && event.streams[0] && setRemoteStream(event.streams[0]) };
+            pc.onicecandidate = (event) => { event.candidate && onIceCandidate(event.candidate) };
+            pc.oniceconnectionstatechange = () => { console.log('ICE Connection State:', pc.iceConnectionState); };
+            pc.onconnectionstatechange = () => { console.log('Connection State:', pc.connectionState); };
+            pc.onsignalingstatechange = () => { console.log('Signaling State:', pc.signalingState); };
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!isFocus) cleanUpStream();
+    }, [isFocus]);
+
+    // Start Call (Caller)
+    const onStartCall = async () => {
+        try {
+            if (!permissionsGranted) {
+                const permission = checkAndRequestPermissions();
+                if (!permission) return;
+            }
+
+            InCallManager.setKeepScreenOn(true);
+            InCallManager.setSpeakerphoneOn(true);
+            InCallManager.start({ media: 'video' });
+
+            const stream = localStream || await mediaDevices.getUserMedia({
+                audio: true,
+                video: videoResolutions.UHD_8K,
+            });
+
+            localStream == null && setLocalStream(stream);
+            peerConnection.current && stream.getTracks().forEach(track => peerConnection.current.addTrack(track, stream));
+
+            const offer = await peerConnection.current.createOffer();
+            await peerConnection.current.setLocalDescription(offer);
+
+            onCreateOffer(offer);
+        } catch (error) {
+            console.log('Local Stream error:', error);
+        }
+    };
+
+    const handleAnswer = async (data) => {
+        try {
+            await peerConnection.current.setRemoteDescription(data.answer);
+            setCallConnected(true);
+        } catch (error) {
+            console.log(`Handle Answer Error: ${error}`);
+        }
+    };
+
+    const handleCandidate = (data) => {
+        try {
+            data?.candidate && peerConnection.current.addIceCandidate(data.candidate);
+        } catch (error) {
+            console.log(`Handle Candidate Error: ${error}`);
+        }
+    };
+
+    // Accept Call (Callee)
+    const onCallAccept = async (data) => {
+        try {
+            await peerConnection.current.setRemoteDescription(data.offer);
+
+            InCallManager.setSpeakerphoneOn(true);
+            InCallManager.setKeepScreenOn(true);
+            InCallManager.start({ media: 'video' });
+
+            const stream = localStream || await mediaDevices.getUserMedia({
+                audio: true,
+                video: videoResolutions.UHD_8K,
+            });
+
+            localStream == null && setLocalStream(stream);
+            stream.getTracks().forEach(track => peerConnection.current.addTrack(track, stream));
+
+            const answer = await peerConnection.current.createAnswer();
+            await peerConnection.current.setLocalDescription(answer);
+
+            onAnswerOffer(answer);
+            setCallConnected(true);
+        } catch (error) {
+            console.log(`Incoming Call Error: ${error}`);
+        }
+    };
+
+    // Start Local Stream (after permissions granted)
+    const startLocalStream = async () => {
+        const stream = await mediaDevices.getUserMedia({
+            audio: true,
+            video: videoResolutions.UHD_8K,
+        });
+        setLocalStream(stream);
+    };
+
+    // Clean Up Resources (stop streams)
+    const cleanUpStream = async () => {
+        stopMediaStream(localStream);
+        stopMediaStream(remoteStream);
+        setLocalStream(null);
+        setRemoteStream(null);
+        InCallManager.setKeepScreenOn(false);
+        InCallManager.stop();
+    };
+
+    const stopMediaStream = (stream) => { stream && stream.getTracks().forEach(track => track.stop()); };
+
+    // Handle View Scaling
+    const onViewScaleChange = () => { setIsBigScaleLocalView(prev => !prev); };
+
+    // Toggle Audio/Mic & Speaker
+    const onToggleMic = () => {
+        setMicEnable(prev => !prev);
+        toggleAudio(localStream);
+    };
+
+    const onToggleSpeaker = () => {
+        setSpeakerEnable(prev => !prev);
+        toggleAudio(remoteStream);
+    };
+
+    // Toggle Camera (Enable/Disable)
+    const onToggleCamera = async () => {
+        setCameraEnable(prev => !prev);
+        if (localStream) localStream.getVideoTracks().forEach(track => track.enabled = !track.enabled);
+    };
+
+    // Switch Camera Mode (Front/Back)
+    const onSwitchCameraMode = async () => {
+        if (localStream) {
+            localStream.getVideoTracks().forEach(track => track._switchCamera());
+            if (cameraEnable) setFrontCameraMode(prev => !prev);
+        };
+    };
+
+    // Helper function to toggle audio on stream
+    const toggleAudio = (stream) => {
+        if (stream) {
+            stream?.getAudioTracks()?.forEach(track => { track.enabled = !track.enabled });
+        }
+    };
+
+    return {
+        localStream,
+        remoteStream,
+        callConnected,
+        isBigScaleLocalView,
+        micEnable,
+        speakerEnable,
+        cameraEnable,
+        frontCameraMode,
+
+        onStartCall,
+        onCallAccept,
+        onViewScaleChange,
+        onToggleMic,
+        onToggleSpeaker,
+        onToggleCamera,
+        onSwitchCameraMode,
+
+        handleAnswer,
+        handleCandidate,
+        startLocalStream,
+    };
+};
+```
+
+#### Explanation
+- **State Initialization:**
+  - `localStream`: Tracks the local user's media stream (audio and video).
+  - `remoteStream`: Tracks the remote user's media stream (audio and video).
+  - `callConnected`: Indicates whether the call is connected.
+  - `isBigScaleLocalView`: Determines whether to show a large local video stream.
+  - `micEnable`, `speakerEnable`, `cameraEnable`: Track the status of microphone, speaker, and camera.
+  - `frontCameraMode`: Tracks whether the front camera is being used.
+
+- **Custom Hooks:**
+  - `useVideoCallPermissions`: Manages and requests camera and microphone permissions.
+  - `usePeerConnection`: Manages the WebRTC peer connection.
+
+- **useEffect:**
+  - Sets up WebRTC peer connection events, such as `ontrack`, `onicecandidate`, and others for managing the call's state.
+
+- **Methods:**
+  - `onStartCall`: Starts the video call and makes an offer.
+  - `handleAnswer`: Handles answering the incoming video call.
+  - `handleCandidate`: Handles ICE candidate events.
+  - `onCallAccept`: Accepts an incoming call and starts the video stream.
+  - `startLocalStream`: Starts the local video stream.
+  - `cleanUpStream`: Cleans up media streams when the user navigates away.
+  - `onViewScaleChange`: Toggles local view scaling.
+  - `onToggleMic`, `onToggleSpeaker`, `onToggleCamera`: Toggles mic, speaker, and camera on/off.
+  - `onSwitchCameraMode`: Switches the camera between front and back.
+
+#### Usage
+This hook is designed to manage the complete video call lifecycle, including permissions, stream management, and WebRTC signaling. Use it in your component by calling `useWebrtcForVC()` and passing the necessary callbacks for `onCreateOffer`, `onAnswerOffer`, and `onIceCandidate`.
+
+------

@@ -6,10 +6,14 @@ This document outlines the setup and implementation of the frontend for the WebR
 
 ### Required Dependencies
 
-- [react-native-webrtc](https://github.com/react-native-webrtc/react-native-webrtc) - WebRTC implementation for React Native
-- [socket.io-client](https://www.npmjs.com/package/socket.io-client) - Client-side WebSocket library
-- [react-native-incall-manager](https://github.com/react-native-webrtc/react-native-incall-manager) - Manages audio/video call settings
-- [react-native-permissions](https://www.npmjs.com/package/react-native-permissions) - Handles runtime permissions for accessing the microphone and camera on both Android and iOS
+- [react-native-permissions](https://www.npmjs.com/package/react-native-permissions) - Handles runtime permissions for accessing the microphone and camera on both Android and iOS devices.
+- [react-native-webrtc](https://github.com/react-native-webrtc/react-native-webrtc) - WebRTC implementation for React Native, used for establishing peer-to-peer video and audio connections.
+- [react-native-incall-manager](https://github.com/react-native-webrtc/react-native-incall-manager) - Manages audio/video call settings such as controlling the speakerphone and ringtone during an ongoing call.
+- [socket.io-client](https://www.npmjs.com/package/socket.io-client) - Client-side WebSocket library, used for real-time communication via sockets (sending and receiving video call events).
+- [socketServices](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/api/socketServices.js) - For socket communication and sending video call events.
+- [@react-native-firebase/messaging](https://rnfirebase.io/messaging/usage) - Firebase Cloud Messaging (FCM) for handling push notifications related to calls and messages in the app.
+- [notifee](https://docs.page/invertase/notifee/react-native/installation) - Manages and displays local notifications for incoming, ongoing, or missed calls.
+- [useFCM Hook](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/notification/useFCM.js) - Firebase Cloud Messaging (FCM) for push notifications.
 
 ------
 

@@ -92,7 +92,7 @@ export const useWebrtcForVC = ({
     const onStartCall = async () => {
         try {
             if (!permissionsGranted) {
-                const permission = checkAndRequestPermissions();
+                const permission = await checkAndRequestPermissions();
                 if (!permission) return;
             };
 
@@ -138,6 +138,11 @@ export const useWebrtcForVC = ({
     // Callee (Receive)
     const onCallAccept = async (data) => {
         try {
+            if (!permissionsGranted) {
+                const permission = await checkAndRequestPermissions();
+                if (!permission) return;
+            };
+
             await peerConnection.current.setRemoteDescription(data.offer);
 
             InCallManager.setSpeakerphoneOn(true);
@@ -168,6 +173,11 @@ export const useWebrtcForVC = ({
     }
 
     const startLocalStream = async () => {
+        if (!permissionsGranted) {
+            const permission = await checkAndRequestPermissions();
+            if (!permission) return;
+        };
+
         const stream = await mediaDevices.getUserMedia({
             audio: true,
             video: videoResolutions.UHD_8K,

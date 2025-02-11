@@ -4,6 +4,7 @@ import socketServices from "../../api/socketServices";
 import { Screens } from "../../routes/helper";
 import { Platform } from "react-native";
 import { sockets } from "../../api/helper";
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
 const profilePlaceholder = 'https://cdn-icons-png.flaticon.com/512/4433/4433850.png';
 
@@ -137,18 +138,24 @@ export const useCallNotification = ({
         }
     };
 
-    const handleCallAccept = (data) => {
+    const handleCallAccept = async (data) => {
         InCallManager.stopRingtone();
         if (data) {
             const { _from, _to } = data;
             if (_from && _to) {
                 if (!notAllowedScreensForCalling.includes(navigationRef?.current?.getCurrentRoute()?.name)) {
-                    navigationRef?.current?.navigate(Screens.VideoCallScreen, {
-                        localUserId: _to,
-                        remoteUserId: _from,
-                        type: 'callee',
-                    });
+                    const granted = await checkAndRequestVideoCallPermissions();
+                    if (granted) {
+                        navigationRef?.current?.navigate(Screens.VideoCallScreen, {
+                            localUserId: _to,
+                            remoteUserId: _from,
+                            type: 'callee',
+                        });
+                    } else {
+                        handleCallReject(data);
+                    }
                 } else {
+                    handleCallReject(data);
                     console.log('Not able to connect.');
                 }
             }
@@ -161,6 +168,26 @@ export const useCallNotification = ({
             const { _from, _to } = data;
             !socketServices?.socket?.connected && socketServices.initializeSocket();
             socketServices.emit(sockets.VideoCall.declineCall, { _from: _to, _to: _from });
+        }
+    };
+
+    const checkAndRequestVideoCallPermissions = async () => {
+        try {
+            const cameraPermission = Platform.OS == 'ios' ? PERMISSIONS.IOS.CAMERA : PERMISSIONS.ANDROID.CAMERA;
+            const micPermission = Platform.OS == 'ios' ? PERMISSIONS.IOS.MICROPHONE : PERMISSIONS.ANDROID.RECORD_AUDIO;
+
+            const cameraStatus = await check(cameraPermission);
+            const micStatus = await check(micPermission);
+
+            if (cameraStatus !== RESULTS.GRANTED) await request(cameraPermission);
+            if (micStatus !== RESULTS.GRANTED) await request(micPermission);
+
+            const updatedCameraStatus = await check(cameraPermission);
+            const updatedMicStatus = await check(micPermission);
+
+            return updatedCameraStatus === RESULTS.GRANTED && updatedMicStatus === RESULTS.GRANTED;
+        } catch (error) {
+            console.log('Error checking or requesting permissions:', error);
         }
     };
 

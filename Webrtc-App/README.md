@@ -42,53 +42,36 @@ Add the following to `Info.plist`:
 
 #### Code Implementation [`src/hooks/useVideoCallPermissions.js`](https://github.com/DharmikSonani/WebRTC/blob/Basic/Webrtc-App/src/hooks/useVideoCallPermissions.js)
 ```javascript
-import { useState, useEffect } from 'react';
-import { Platform, PermissionsAndroid } from 'react-native';
+import { useState } from 'react';
+import { Platform } from 'react-native';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
-const useVideoCallPermissions = () => {
+export const useVideoCallPermissions = () => {
     const [permissionsGranted, setPermissionsGranted] = useState(false);
 
     const checkAndRequestPermissions = async () => {
         try {
-            if (Platform.OS === 'android') {
-                const granted = await PermissionsAndroid.requestMultiple([
-                    PermissionsAndroid.PERMISSIONS.CAMERA,
-                    PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-                ]);
+            const cameraPermission = Platform.OS == 'ios' ? PERMISSIONS.IOS.CAMERA : PERMISSIONS.ANDROID.CAMERA;
+            const micPermission = Platform.OS == 'ios' ? PERMISSIONS.IOS.MICROPHONE : PERMISSIONS.ANDROID.RECORD_AUDIO;
 
-                const cameraGranted = granted[PermissionsAndroid.PERMISSIONS.CAMERA] === PermissionsAndroid.RESULTS.GRANTED;
-                const micGranted = granted[PermissionsAndroid.PERMISSIONS.RECORD_AUDIO] === PermissionsAndroid.RESULTS.GRANTED;
-                setPermissionsGranted(cameraGranted && micGranted);
-                return cameraGranted && micGranted;
-            } else if (Platform.OS === 'ios') {
-                const cameraStatus = await check(PERMISSIONS.IOS.CAMERA);
-                const micStatus = await check(PERMISSIONS.IOS.MICROPHONE);
+            const cameraStatus = await check(cameraPermission);
+            const micStatus = await check(micPermission);
 
-                if (cameraStatus !== RESULTS.GRANTED) await request(PERMISSIONS.IOS.CAMERA);
-                if (micStatus !== RESULTS.GRANTED) await request(PERMISSIONS.IOS.MICROPHONE);
+            if (cameraStatus !== RESULTS.GRANTED) await request(cameraPermission);
+            if (micStatus !== RESULTS.GRANTED) await request(micPermission);
 
-                const updatedCameraStatus = await check(PERMISSIONS.IOS.CAMERA);
-                const updatedMicStatus = await check(PERMISSIONS.IOS.MICROPHONE);
+            const updatedCameraStatus = await check(cameraPermission);
+            const updatedMicStatus = await check(micPermission);
 
-                setPermissionsGranted(
-                    updatedCameraStatus === RESULTS.GRANTED && updatedMicStatus === RESULTS.GRANTED
-                );
-                return updatedCameraStatus === RESULTS.GRANTED && updatedMicStatus === RESULTS.GRANTED;
-            }
+            setPermissionsGranted(updatedCameraStatus === RESULTS.GRANTED && updatedMicStatus === RESULTS.GRANTED);
+            return updatedCameraStatus === RESULTS.GRANTED && updatedMicStatus === RESULTS.GRANTED;
         } catch (error) {
             console.log('Error checking or requesting permissions:', error);
         }
     };
 
-    useEffect(() => {
-        checkAndRequestPermissions();
-    }, []);
-
     return { permissionsGranted, checkAndRequestPermissions };
 };
-
-export default useVideoCallPermissions;
 ```
 
 #### Explanation
@@ -96,16 +79,9 @@ export default useVideoCallPermissions;
   - `permissionsGranted`: Tracks whether the camera and microphone permissions are granted. Initially set to `false`.
 
 - **`checkAndRequestPermissions` Function:** 
-  - **Android:** 
-    - Requests both `CAMERA` and `RECORD_AUDIO` permissions using `PermissionsAndroid.requestMultiple`.
-    - Updates `permissionsGranted` based on whether both permissions are granted.
-  - **iOS:** 
     - Checks the status of `CAMERA` and `MICROPHONE` permissions using `check`.
     - Requests permissions using `request` if they're not granted.
     - Updates `permissionsGranted` based on whether both permissions are granted.
-
-- **`useEffect`:** 
-  - Calls `checkAndRequestPermissions` on component mount to ensure permissions are checked and requested if needed.
 
 - **Return Values:** 
   - Returns `permissionsGranted` (status) and `checkAndRequestPermissions` (function to manually trigger permission checks/requests).
@@ -211,7 +187,7 @@ This section explains how WebRTC is configured for making and receiving video ca
 #### Code Implementation [`src/hooks/useWebrtcForVC.js`](https://github.com/DharmikSonani/WebRTC/blob/Basic/Webrtc-App/src/hooks/useWebrtcForVC.js)
 ```javascript
 import { useEffect, useState } from "react";
-import useVideoCallPermissions from "./useVideoCallPermissions";
+import { useVideoCallPermissions } from "./useVideoCallPermissions";
 import { usePeerConnection } from "./usePeerConnection";
 import InCallManager from 'react-native-incall-manager';
 import { mediaDevices } from "react-native-webrtc";
@@ -268,7 +244,7 @@ export const useWebrtcForVC = ({
             if (!permissionsGranted) {
                 const permission = await checkAndRequestPermissions();
                 if (!permission) return;
-            }
+            };
 
             InCallManager.setKeepScreenOn(true);
             InCallManager.setSpeakerphoneOn(true);
@@ -291,6 +267,11 @@ export const useWebrtcForVC = ({
     // Handle incoming call (Callee)
     const onCallAccept = async (data) => {
         try {
+             if (!permissionsGranted) {
+                const permission = await checkAndRequestPermissions();
+                if (!permission) return;
+            };
+
             await peerConnection.current.setRemoteDescription(data.offer);
             InCallManager.setSpeakerphoneOn(true);
             InCallManager.setKeepScreenOn(true);

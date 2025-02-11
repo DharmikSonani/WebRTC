@@ -352,9 +352,6 @@ export const useVideoCallPermissions = () => {
     - Requests permissions using `request` if they're not granted.
     - Updates `permissionsGranted` based on whether both permissions are granted.
 
-- **`useEffect`:** 
-  - Calls `checkAndRequestPermissions` on component mount to ensure permissions are checked and requested if needed.
-
 - **Return Values:** 
   - Returns `permissionsGranted` (status) and `checkAndRequestPermissions` (function to manually trigger permission checks/requests).
 

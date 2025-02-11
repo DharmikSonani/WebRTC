@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import useVideoCallPermissions from "./useVideoCallPermissions";
+import { useVideoCallPermissions } from "./useVideoCallPermissions";
 import { usePeerConnection } from "./usePeerConnection";
 import InCallManager from 'react-native-incall-manager';
 import { mediaDevices } from "react-native-webrtc";
@@ -92,7 +92,7 @@ export const useWebrtcForVC = ({
     const onStartCall = async () => {
         try {
             if (!permissionsGranted) {
-                const permission = checkAndRequestPermissions();
+                const permission = await checkAndRequestPermissions();
                 if (!permission) return;
             };
 
@@ -136,6 +136,11 @@ export const useWebrtcForVC = ({
     // Callee (Receive)
     const onCallAccept = async (data) => {
         try {
+            if (!permissionsGranted) {
+                const permission = await checkAndRequestPermissions();
+                if (!permission) return;
+            };
+
             await peerConnection.current.setRemoteDescription(data.offer);
 
             InCallManager.setSpeakerphoneOn(true);

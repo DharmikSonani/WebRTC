@@ -6,7 +6,7 @@ export const usePeerConnection = () => {
 
     useEffect(() => {
         setupPeerConnection();
-        return () => { closePeerConnection(); };
+        return () => { closePeerConnection(peerConnection.current); };
     }, []);
 
     // Setup Peer Connection
@@ -52,10 +52,9 @@ export const usePeerConnection = () => {
     };
 
     // Close Peer Connection
-    const closePeerConnection = () => {
-        if (peerConnection.current) {
-            peerConnection.current.close();
-            peerConnection.current = null;
+    const closePeerConnection = (connection) => {
+        if (connection) {
+            connection.close();
         }
     };
 

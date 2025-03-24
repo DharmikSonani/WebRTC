@@ -120,10 +120,11 @@ npx react-native run-android
 ## iOS Setup (Required)
 
 
-## Required Dependencies
+## Usage - useAudioDeviceManager hook
+#### Required Dependencies
 - **[react-native-device-info](https://www.npmjs.com/package/react-native-device-info)** - Provides device-related information, including detecting connected audio devices such as Bluetooth and wired headsets.
 
-### Code Implementation [`src/hooks/video-call/useAudioDeviceManager.js`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/hooks/video-call/useAudioDeviceManager.js)
+#### Code Implementation [`src/hooks/video-call/useAudioDeviceManager.js`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/hooks/video-call/useAudioDeviceManager.js)
 
 ```javascript
 import { useEffect, useRef, useState } from 'react';

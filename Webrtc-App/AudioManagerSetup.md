@@ -1,8 +1,11 @@
-## Audio Device Management for Video Calls
+# Audio Device Management for Video Calls
 
 This section explains the setup and implementation for managing audio devices in your application using WebRTC.
 
-### Native Setup
+## Native Setup
+### Android Setup
+
+### iOS Setup
 
 #### Required Dependencies
 - **[react-native-device-info](https://www.npmjs.com/package/react-native-device-info)** - Provides device-related information, including detecting connected audio devices such as Bluetooth and wired headsets.

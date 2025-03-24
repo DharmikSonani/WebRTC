@@ -9,7 +9,7 @@ This section explains the setup and implementation for managing audio devices in
 This section explains how to set up and integrate the `AudioDeviceModule` for managing audio output devices natively in an Android application.
 
 ### 1. Add following permissions in menifest file
-#### **File:** `android/app/src/main/AndroidManifest.xml`
+#### **File:** [`android/app/src/main/AndroidManifest.xml`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/android/app/src/main/AndroidManifest.xml)
 
 ```xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
@@ -25,7 +25,7 @@ This section explains how to set up and integrate the `AudioDeviceModule` for ma
 ```
 
 ### 2. Create the Native Module
-#### **File:** `android/app/src/main/java/com/<package-name>/AudioDeviceModule.kt`
+#### **File:** [`android/app/src/main/java/com/<package-name>/AudioDeviceModule.kt`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/android/app/src/main/java/com/webrtcapp/AudioDeviceModule.kt)
 
 ```kotlin
 package com.<package-name>
@@ -73,7 +73,7 @@ class AudioDeviceModule(reactContext: ReactApplicationContext) : ReactContextBas
 ```
 
 ### 3. Create the React Package
-#### **File:** `android/app/src/main/java/com/<package-name>/AudioDevicePackage.kt`
+#### **File:** [`android/app/src/main/java/com/<package-name>/AudioDevicePackage.kt`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/android/app/src/main/java/com/webrtcapp/AudioDevicePackage.kt)
 
 ```kotlin
 package com.<package-name>
@@ -95,7 +95,7 @@ class AudioDevicePackage : ReactPackage {
 ```
 
 ### 4. Register the Package in `MainApplication.kt`
-#### **File:** `android/app/src/main/java/com/<package-name>/MainApplication.kt`
+#### **File:** [`android/app/src/main/java/com/<package-name>/MainApplication.kt`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/android/app/src/main/java/com/webrtcapp/MainApplication.kt)
 
 Modify the `MainApplication.kt` file to include the `AudioDevicePackage`.
 

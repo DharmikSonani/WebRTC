@@ -9,6 +9,7 @@ This document outlines the setup and implementation of the frontend for the WebR
 - [react-native-permissions](https://www.npmjs.com/package/react-native-permissions) - Handles runtime permissions for accessing the microphone and camera on both Android and iOS devices.
 - [react-native-webrtc](https://github.com/react-native-webrtc/react-native-webrtc) - WebRTC implementation for React Native, used for establishing peer-to-peer video and audio connections.
 - [react-native-incall-manager](https://github.com/react-native-webrtc/react-native-incall-manager) - Manages audio/video call settings such as controlling the speakerphone and ringtone during an ongoing call.
+- [react-native-device-info](https://www.npmjs.com/package/react-native-device-info) - Use to get device info like devices connectivity.
 - [socket.io-client](https://www.npmjs.com/package/socket.io-client) - Client-side WebSocket library, used for real-time communication via sockets (sending and receiving video call events).
 - [socketServices](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/api/socketServices.js) - For socket communication and sending video call events.
 - [@react-native-firebase/messaging](https://rnfirebase.io/messaging/usage) - Firebase Cloud Messaging (FCM) for handling push notifications related to calls and messages in the app.
@@ -29,8 +30,30 @@ This section explains the setup and implementation of handling video call permis
 Ensure you have the necessary permissions in `AndroidManifest.xml`:
 
 ```xml
+<uses-feature android:name="android.hardware.camera" />
+<uses-feature android:name="android.hardware.camera.autofocus" />
+<uses-feature android:name="android.hardware.audio.output" />
+<uses-feature android:name="android.hardware.microphone" />
+
+<uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.CAMERA" />
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+<uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+<uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
+<uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+<uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    
+<uses-permission android:name="android.permission.WAKE_LOCK"/>
+
+<uses-permission android:name="android.permission.BIND_TELECOM_CONNECTION_SERVICE" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<uses-permission android:name="android.permission.MANAGE_OWN_CALLS" />
+
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 ```
 
 #### Required Permissions Setup : iOS (Info.plist)
@@ -653,7 +676,7 @@ This section explains the setup and implementation for handling video calls usin
 - **[react-native-incall-manager](https://github.com/react-native-webrtc/react-native-incall-manager)** - Manages in-call behaviors such as speakerphone and screen on during a call.
 - **[react-native-webrtc](https://github.com/react-native-webrtc/react-native-webrtc)** - Provides WebRTC functionality, allowing peer-to-peer video and audio streaming.
 - **[react-navigation](https://reactnavigation.org/docs/getting-started/)** - Used to manage screen focus to handle cleanup of resources when the screen is not in focus.
-
+- **[useAudioDeviceManager](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/hooks/video-call/useAudioDeviceManager.js)** - Use for managing audio devices. [For Native Setup Click Here]()
 #### Code Implementation [`src/hooks/video-call/useWebrtcForVC.js`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/video-call/useWebrtcForVC.js)
 
 ```javascript
@@ -663,6 +686,7 @@ import { mediaDevices } from "react-native-webrtc";
 import { useIsFocused } from "@react-navigation/native";
 import { usePeerConnection } from "./usePeerConnection";
 import { useVideoCallPermissions } from "./useVideoCallPermissions";
+import { useAudioDeviceManager } from "./useAudioDeviceManager";
 
 const videoResolutions = {
     // Different video resolutions for quality management
@@ -685,6 +709,7 @@ export const useWebrtcForVC = ({
     // Custom Hooks
     const { permissionsGranted, checkAndRequestPermissions } = useVideoCallPermissions();
     const { peerConnection } = usePeerConnection();
+    const { audioOutput, availableDevices, switchAudioOutput } = useAudioDeviceManager();
 
     // State
     const [localStream, setLocalStream] = useState(null); // Local User Stream
@@ -867,6 +892,10 @@ export const useWebrtcForVC = ({
         handleAnswer,
         handleCandidate,
         startLocalStream,
+
+        audioOutput,
+        availableDevices,
+        switchAudioOutput,
     };
 };
 ```

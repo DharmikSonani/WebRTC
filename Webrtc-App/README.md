@@ -9,12 +9,12 @@ This document outlines the setup and implementation of the frontend for the WebR
 - [react-native-permissions](https://www.npmjs.com/package/react-native-permissions) - Handles runtime permissions for accessing the microphone and camera on both Android and iOS devices.
 - [react-native-webrtc](https://github.com/react-native-webrtc/react-native-webrtc) - WebRTC implementation for React Native, used for establishing peer-to-peer video and audio connections.
 - [react-native-incall-manager](https://github.com/react-native-webrtc/react-native-incall-manager) - Manages audio/video call settings such as controlling the speakerphone and ringtone during an ongoing call.
-- [react-native-device-info](https://www.npmjs.com/package/react-native-device-info) - Use to get device info like devices connectivity.
+- [react-native-device-info](https://www.npmjs.com/package/react-native-device-info) - Provides device-related information, including detecting connected audio devices such as Bluetooth and wired headsets.
 - [socket.io-client](https://www.npmjs.com/package/socket.io-client) - Client-side WebSocket library, used for real-time communication via sockets (sending and receiving video call events).
-- [socketServices](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/api/socketServices.js) - For socket communication and sending video call events.
+- [socketServices](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/api/socketServices.js) - For socket communication and sending video call events.
 - [@react-native-firebase/messaging](https://rnfirebase.io/messaging/usage) - Firebase Cloud Messaging (FCM) for handling push notifications related to calls and messages in the app.
 - [notifee](https://docs.page/invertase/notifee/react-native/installation) - Manages and displays local notifications for incoming, ongoing, or missed calls.
-- [useFCM Hook](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/notification/useFCM.js) - Firebase Cloud Messaging (FCM) for push notifications.
+- [useFCM Hook](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/hooks/notification/useFCM.js) - Firebase Cloud Messaging (FCM) for push notifications.
 
 ------
 
@@ -67,7 +67,7 @@ Add the following to `Info.plist`:
 <string>Your app needs microphone access for video calls.</string>
 ```
 
-#### Code Implementation [`src/hooks/useVideoCallPermissions.js`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/video-call/useVideoCallPermissions.js)
+#### Code Implementation [`src/hooks/useVideoCallPermissions.js`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/hooks/video-call/useVideoCallPermissions.js)
 ```javascript
 import { useState } from 'react';
 import { Platform } from 'react-native';
@@ -122,7 +122,7 @@ This section explains the setup and implementation of the WebRTC peer connection
 #### Required Dependencies
 - **[react-native-webrtc](https://github.com/react-native-webrtc/react-native-webrtc)** - For WebRTC functionality such as establishing peer-to-peer connections.
 
-#### Code Implementation [`src/hooks/usePeerConnection.js`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/video-call/usePeerConnection.js)
+#### Code Implementation [`src/hooks/usePeerConnection.js`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/hooks/video-call/usePeerConnection.js)
 ```javascript
 import { useEffect, useRef } from 'react';
 import { RTCPeerConnection } from 'react-native-webrtc';
@@ -231,7 +231,7 @@ Before implementing FCM, ensure that Firebase is properly set up in your React N
 2. Configure Firebase in your project by adding the necessary Firebase configuration files (`google-services.json` for Android and `GoogleService-Info.plist` for iOS).
 3. Enable Firebase Cloud Messaging in the Firebase console.
 
-#### Code Implementation [`src/hooks/notification/useFCM.js`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/notification/useFCM.js)
+#### Code Implementation [`src/hooks/notification/useFCM.js`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/hooks/notification/useFCM.js)
 ```javascript
 import { useState, useEffect } from 'react';
 import messaging from '@react-native-firebase/messaging';
@@ -300,7 +300,7 @@ This section explains the setup and implementation of handling notifications in 
 - **[@react-native-firebase/messaging](https://rnfirebase.io/messaging/usage)** - To manage push notifications.
 - **[notifee](https://notifee.app/react-native/docs/overview)** - To handle and display local notifications.
 
-#### Code Implementation [`src/hooks/notification/useNotification.js`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/notification/useNotification.js)
+#### Code Implementation [`src/hooks/notification/useNotification.js`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/hooks/notification/useNotification.js)
 ```javascript
 import messaging from '@react-native-firebase/messaging';
 import notifee, { EventType } from '@notifee/react-native';
@@ -437,9 +437,9 @@ This section explains the setup and implementation of handling call notification
 #### Required Dependencies
 - **[react-native-incall-manager](https://github.com/react-native-webrtc/react-native-incall-manager)** - To manage the call ringtone and stop/start ringtone during an incoming or ongoing call.
 - **[@notifee/react-native](https://notifee.app/react-native/docs/installation)** - To handle local notifications for incoming and missed calls.
-- **[socketServices](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/api/socketServices.js)** - For socket communication and sending video call events.
+- **[socketServices](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/api/socketServices.js)** - For socket communication and sending video call events.
 
-#### Code Implementation [`src/hooks/useCallNotification.js`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/video-call/useCallNotification.js)
+#### Code Implementation [`src/hooks/useCallNotification.js`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/hooks/video-call/useCallNotification.js)
 ```javascript
 import InCallManager from "react-native-incall-manager";
 import notifee, { AndroidCategory, AndroidImportance, AndroidVisibility } from '@notifee/react-native';
@@ -677,7 +677,7 @@ This section explains the setup and implementation for handling video calls usin
 - **[react-native-webrtc](https://github.com/react-native-webrtc/react-native-webrtc)** - Provides WebRTC functionality, allowing peer-to-peer video and audio streaming.
 - **[react-navigation](https://reactnavigation.org/docs/getting-started/)** - Used to manage screen focus to handle cleanup of resources when the screen is not in focus.
 - **[useAudioDeviceManager](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/hooks/video-call/useAudioDeviceManager.js)** - Use for managing audio devices. [Setup useAudioDeviceManager](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/AudioManagerSetup.md)
-#### Code Implementation [`src/hooks/video-call/useWebrtcForVC.js`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/video-call/useWebrtcForVC.js)
+#### Code Implementation [`src/hooks/video-call/useWebrtcForVC.js`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/hooks/video-call/useWebrtcForVC.js)
 
 ```javascript
 import { useEffect, useState } from "react";
@@ -940,7 +940,7 @@ This component is the entry point for the application, responsible for setting u
 - **[@react-navigation/native](https://reactnavigation.org/docs/getting-started/)** - Navigation library used for managing app navigation.
 - **[socket.io-client](https://www.npmjs.com/package/socket.io-client)** - Socket service for real-time communication.
 
-#### Code Implementation [`src/App.js`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/App.js)
+#### Code Implementation [`src/App.js`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/App.js)
 
 ```javascript
 import React, { useEffect } from 'react';
@@ -1001,7 +1001,7 @@ export default App;
    - Inside the `useEffect`, the socket is initialized when the app starts, and the cleanup function disconnects it when the app is unmounted to prevent memory leaks and unnecessary connections.
 
 3. **Notification Permissions:**
-   - `requestNotificationPermission`: Requests permission to send notifications to the user, defined in the [`useNotification`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/notification/useNotification.js) custom hook.
+   - `requestNotificationPermission`: Requests permission to send notifications to the user, defined in the [`useNotification`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/hooks/notification/useNotification.js) custom hook.
 
 4. **StatusBar:**
    - The `StatusBar` component is used to hide the status bar and make it translucent, ensuring that it doesn't interfere with the app's UI.
@@ -1028,7 +1028,7 @@ This component represents a video call screen for both the caller and the receiv
 - **[react-native-webrtc](https://github.com/react-native-webrtc/react-native-webrtc)** - WebRTC implementation for React Native
 - **[socket.io-client](https://www.npmjs.com/package/socket.io-client)** - Client-side WebSocket library
 - **[react-native-incall-manager](https://github.com/react-native-webrtc/react-native-incall-manager)** - Manages audio/video call settings
-- **[useFCM Hook](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/notification/useFCM.js)** - Firebase Cloud Messaging (FCM) for push notifications.
+- **[useFCM Hook](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/hooks/notification/useFCM.js)** - Firebase Cloud Messaging (FCM) for push notifications.
 
 #### Code Implementation [`src/screens/VideoCallScreen.js`](https://github.com/your-repo/Project-Name/src/screens/VideoCallScreen.js)
 
@@ -1282,7 +1282,7 @@ const styles = StyleSheet.create({
    - The component listens for socket events related to video call offers, answers, candidates, and hangups. It sends appropriate data through sockets to establish the video call.
 
 3. **UI Elements:**
-   - The [`DraggableView`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/components/DraggableView.js) component allows the local video to be draggable on the screen, and its size can be toggled by clicking on it.
+   - The [`DraggableView`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/components/DraggableView.js) component allows the local video to be draggable on the screen, and its size can be toggled by clicking on it.
    - Buttons for starting the call, toggling microphone/speaker, and hanging up are provided at the bottom of the screen.
 
 4. **Call Management:**

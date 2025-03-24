@@ -676,7 +676,7 @@ This section explains the setup and implementation for handling video calls usin
 - **[react-native-incall-manager](https://github.com/react-native-webrtc/react-native-incall-manager)** - Manages in-call behaviors such as speakerphone and screen on during a call.
 - **[react-native-webrtc](https://github.com/react-native-webrtc/react-native-webrtc)** - Provides WebRTC functionality, allowing peer-to-peer video and audio streaming.
 - **[react-navigation](https://reactnavigation.org/docs/getting-started/)** - Used to manage screen focus to handle cleanup of resources when the screen is not in focus.
-- **[useAudioDeviceManager](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/hooks/video-call/useAudioDeviceManager.js)** - Use for managing audio devices. [For Native Setup Click Here]()
+- **[useAudioDeviceManager](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/hooks/video-call/useAudioDeviceManager.js)** - Use for managing audio devices. [For Native Setup Click Here](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/AudioManagerSetup.md)
 #### Code Implementation [`src/hooks/video-call/useWebrtcForVC.js`](https://github.com/DharmikSonani/WebRTC/blob/Push-Notification/Webrtc-App/src/hooks/video-call/useWebrtcForVC.js)
 
 ```javascript

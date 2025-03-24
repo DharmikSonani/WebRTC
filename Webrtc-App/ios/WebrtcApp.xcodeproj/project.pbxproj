@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0068F79A2D918C9300B28974 /* AudioDeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0068F7992D918C9300B28974 /* AudioDeviceManager.swift */; };
+		0068F79C2D918CCB00B28974 /* AudioDeviceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 0068F79B2D918CCB00B28974 /* AudioDeviceManager.m */; };
 		00D3B7DA2D48CB8100B61011 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 00D3B7D92D48CB8100B61011 /* GoogleService-Info.plist */; };
 		00E356F31AD99517003FC87E /* WebrtcAppTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* WebrtcAppTests.m */; };
 		014C8E931F2902C9A7A56707 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
@@ -29,6 +31,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0068F7982D918C9300B28974 /* WebrtcApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "WebrtcApp-Bridging-Header.h"; sourceTree = "<group>"; };
+		0068F7992D918C9300B28974 /* AudioDeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceManager.swift; sourceTree = "<group>"; };
+		0068F79B2D918CCB00B28974 /* AudioDeviceManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudioDeviceManager.m; sourceTree = "<group>"; };
 		00B38BB32D48D710005A46CF /* WebrtcApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = WebrtcApp.entitlements; path = WebrtcApp/WebrtcApp.entitlements; sourceTree = "<group>"; };
 		00D3B7D92D48CB8100B61011 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		00E356EE1AD99517003FC87E /* WebrtcAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WebrtcAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -100,6 +105,9 @@
 				13B07FB71A68108700A75B9A /* main.m */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
 				00D3B7D92D48CB8100B61011 /* GoogleService-Info.plist */,
+				0068F7992D918C9300B28974 /* AudioDeviceManager.swift */,
+				0068F7982D918C9300B28974 /* WebrtcApp-Bridging-Header.h */,
+				0068F79B2D918CCB00B28974 /* AudioDeviceManager.m */,
 			);
 			name = WebrtcApp;
 			sourceTree = "<group>";
@@ -215,7 +223,7 @@
 						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
 					13B07F861A680F5B00A75B9A = {
-						LastSwiftMigration = 1120;
+						LastSwiftMigration = 1620;
 					};
 				};
 			};
@@ -416,8 +424,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0068F79C2D918CCB00B28974 /* AudioDeviceManager.m in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
+				0068F79A2D918C9300B28974 /* AudioDeviceManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -510,6 +520,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "WebrtcApp-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -543,6 +554,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "WebrtcApp-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				VERSIONING_SYSTEM = "apple-generic";

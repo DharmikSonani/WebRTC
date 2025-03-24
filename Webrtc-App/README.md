@@ -720,8 +720,6 @@ export const useWebrtcForVC = ({
                 if (!permission) return;
             };
 
-            InCallManager.setKeepScreenOn(true);
-            InCallManager.setSpeakerphoneOn(true);
             InCallManager.start({ media: 'video' });
 
             const stream = localStream || await mediaDevices.getUserMedia({
@@ -768,8 +766,6 @@ export const useWebrtcForVC = ({
             
             await peerConnection.current.setRemoteDescription(data.offer);
 
-            InCallManager.setSpeakerphoneOn(true);
-            InCallManager.setKeepScreenOn(true);
             InCallManager.start({ media: 'video' });
 
             const stream = localStream || await mediaDevices.getUserMedia({
@@ -810,7 +806,6 @@ export const useWebrtcForVC = ({
         stopMediaStream(remoteStream);
         setLocalStream(null);
         setRemoteStream(null);
-        InCallManager.setKeepScreenOn(false);
         InCallManager.stop();
     };
 

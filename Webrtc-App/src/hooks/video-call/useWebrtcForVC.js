@@ -4,6 +4,7 @@ import { mediaDevices } from "react-native-webrtc";
 import { useIsFocused } from "@react-navigation/native";
 import { usePeerConnection } from "./usePeerConnection";
 import { useVideoCallPermissions } from "./useVideoCallPermissions";
+import { useAudioDeviceManager } from "./useAudioDeviceManager";
 
 const videoResolutions = {
     SD_360p: {
@@ -62,6 +63,7 @@ export const useWebrtcForVC = ({
     // Custom Hooks
     const { permissionsGranted, checkAndRequestPermissions } = useVideoCallPermissions();
     const { peerConnection } = usePeerConnection();
+    const { audioOutput, availableDevices, switchAudioOutput } = useAudioDeviceManager();
 
     // State
     const [localStream, setLocalStream] = useState(null); // Local User
@@ -96,8 +98,6 @@ export const useWebrtcForVC = ({
                 if (!permission) return;
             };
 
-            InCallManager.setKeepScreenOn(true);
-            InCallManager.setSpeakerphoneOn(true);
             InCallManager.start({ media: 'video' });
 
             const stream = localStream != null ? localStream : await mediaDevices.getUserMedia({
@@ -145,8 +145,6 @@ export const useWebrtcForVC = ({
 
             await peerConnection.current.setRemoteDescription(data.offer);
 
-            InCallManager.setSpeakerphoneOn(true);
-            InCallManager.setKeepScreenOn(true);
             InCallManager.start({ media: 'video' });
 
             const stream = localStream != null ? localStream : await mediaDevices.getUserMedia({
@@ -192,7 +190,6 @@ export const useWebrtcForVC = ({
         stopMediaStream(remoteStream);
         setLocalStream(null);
         setRemoteStream(null);
-        InCallManager.setKeepScreenOn(false);
         InCallManager.stop();
     }
 
@@ -247,5 +244,9 @@ export const useWebrtcForVC = ({
         handleAnswer,
         handleCandidate,
         startLocalStream,
+
+        audioOutput,
+        availableDevices,
+        switchAudioOutput,
     }
 }

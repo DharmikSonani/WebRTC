@@ -119,6 +119,91 @@ npx react-native run-android
 
 ## iOS Setup (Required)
 
+### 1. Create the Audio Device Manager Module
+
+#### **Step 1: Add `AudioDeviceManager.swift`**
+Create a new file at `ios/AudioDeviceManager.swift` and add the following code:
+
+```swift
+import AVFoundation
+import React
+
+@objc(AudioDeviceManager)
+class AudioDeviceManager: NSObject, RCTBridgeModule {
+  
+  static func moduleName() -> String {
+    return "AudioDeviceManager"
+  }
+  
+  @objc
+  func switchAudioOutput(_ deviceType: String, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
+    do {
+      let audioSession = AVAudioSession.sharedInstance()
+      
+      try audioSession.setActive(true)
+      
+      switch deviceType {
+      case "SPEAKER":
+        try audioSession.overrideOutputAudioPort(.speaker)
+        try audioSession.setCategory(.playAndRecord, mode: .videoChat, options: [.defaultToSpeaker])
+        
+      case "BLUETOOTH":
+        let availableRoutes = audioSession.currentRoute.outputs
+        let bluetoothRoutes = availableRoutes.filter { $0.portType == .bluetoothA2DP || $0.portType == .bluetoothHFP }
+        
+        if !bluetoothRoutes.isEmpty {
+          try audioSession.setCategory(.playAndRecord, mode: .videoChat, options: [.allowBluetooth, .allowBluetoothA2DP])
+        }
+        
+      case "WIRED_HEADSET":
+        try audioSession.setCategory(.playAndRecord, mode: .videoChat, options: [])
+        
+      default:
+        try audioSession.setCategory(.playAndRecord, mode: .default, options: [])
+      }
+      
+      try audioSession.setActive(true)
+      resolver("\(deviceType)")
+      
+    } catch let error {
+      rejecter("AUDIO_ERROR", "Failed to switch audio: \(error.localizedDescription)", error)
+    }
+  }
+  
+  @objc
+  static func requiresMainQueueSetup() -> Bool {
+    return true
+  }
+}
+```
+
+#### **Step 2: Create the Bridging Header**
+Create a file named `ios/<YourApplicationName>-Bridging-Header.h` and add:
+
+```objc
+#import "React/RCTBridgeModule.h"
+```
+
+#### **Step 3: Create the Objective-C Interface**
+Create a file named `ios/AudioDeviceManager.m` and add:
+
+```objc
+#import "React/RCTBridgeModule.h"
+
+@interface RCT_EXTERN_MODULE(AudioDeviceManager, NSObject)
+RCT_EXTERN_METHOD(switchAudioOutput:(NSString *)deviceType resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+@end
+```
+
+### 2. Rebuild the Project
+After adding the native module, rebuild the project to apply the changes:
+
+```sh
+cd ios && pod install && cd ..
+npx react-native run-ios
+```
+
+Your iOS audio device management module is now set up and ready to use!
 
 ## Usage - useAudioDeviceManager hook
 #### Required Dependencies

@@ -3,9 +3,124 @@
 This section explains the setup and implementation for managing audio devices in your application using WebRTC.
 
 ## Native Setup
+
 ### Android Setup
 
+This section explains how to set up and integrate the `AudioDeviceModule` for managing audio output devices natively in an Android application.
+
+### 1. Add following permissions in menifest file
+#### **File:** `android/app/src/main/AndroidManifest.xml`
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-feature android:name="android.hardware.audio.output" />
+    <uses-feature android:name="android.hardware.microphone" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+</manifest>
+```
+
+### 2. Create the Native Module
+#### **File:** `android/app/src/main/java/com/<package-name>/AudioDeviceModule.kt`
+
+```kotlin
+package com.<package-name>
+
+import android.content.Context
+import android.media.AudioManager
+import android.util.Log
+import com.facebook.react.bridge.*
+
+class AudioDeviceModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
+    private val audioManager: AudioManager = reactContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
+    override fun getName(): String {
+        return "AudioDeviceModule"
+    }
+
+    @ReactMethod
+    fun switchAudioOutput(deviceType: String, promise: Promise) {
+        try {
+            when (deviceType) {
+                "SPEAKER" -> {
+                    audioManager.isSpeakerphoneOn = true
+                    audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+                }
+                "BLUETOOTH" -> {
+                    audioManager.startBluetoothSco()
+                    audioManager.isBluetoothScoOn = true
+                }
+                "WIRED_HEADSET" -> {
+                    audioManager.isSpeakerphoneOn = false
+                    audioManager.stopBluetoothSco()
+                    audioManager.isBluetoothScoOn = false
+                    audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+                }
+                else -> {
+                    audioManager.mode = AudioManager.MODE_NORMAL
+                }
+            }
+            promise.resolve("$deviceType")
+        } catch (e: Exception) {
+            promise.reject("AUDIO_ERROR", "Failed to switch audio: ${e.message}")
+        }
+    }
+}
+```
+
+### 3. Create the React Package
+#### **File:** `android/app/src/main/java/com/<package-name>/AudioDevicePackage.kt`
+
+```kotlin
+package com.<package-name>
+
+import com.facebook.react.ReactPackage
+import com.facebook.react.bridge.NativeModule
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.uimanager.ViewManager
+
+class AudioDevicePackage : ReactPackage {
+    override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
+        return listOf(AudioDeviceModule(reactContext))
+    }
+
+    override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
+        return emptyList()
+    }
+}
+```
+
+### 4. Register the Package in `MainApplication.kt`
+#### **File:** `android/app/src/main/java/com/<package-name>/MainApplication.kt`
+
+Modify the `MainApplication.kt` file to include the `AudioDevicePackage`.
+
+```kotlin
+class MainApplication : Application(), ReactApplication {
+    override val reactNativeHost: ReactNativeHost =
+        object : DefaultReactNativeHost(this) {
+            override fun getPackages(): List<ReactPackage> =
+                PackageList(this).packages.apply {
+                    add(AudioDevicePackage()) // Add this line For Audio Device Manager
+                }
+        }
+}
+```
+
+### 5. Rebuild the Project
+After adding the native module, rebuild the project to apply the changes:
+
+```sh
+cd android && ./gradlew clean && cd ..
+npx react-native run-android
+```
+
 ### iOS Setup
+
 
 #### Required Dependencies
 - **[react-native-device-info](https://www.npmjs.com/package/react-native-device-info)** - Provides device-related information, including detecting connected audio devices such as Bluetooth and wired headsets.

@@ -1598,6 +1598,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNDeviceInfo (14.0.4):
+    - React-Core
   - RNFBApp (21.7.1):
     - Firebase/CoreOnly (= 11.7.0)
     - React-Core
@@ -1728,6 +1730,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeIncallManager (from `../node_modules/react-native-incall-manager`)
   - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
+  - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
@@ -1885,6 +1888,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-incall-manager"
   RNCMaskedView:
     :path: "../node_modules/@react-native-masked-view/masked-view"
+  RNDeviceInfo:
+    :path: "../node_modules/react-native-device-info"
   RNFBApp:
     :path: "../node_modules/@react-native-firebase/app"
   RNFBMessaging:
@@ -1978,6 +1983,7 @@ SPEC CHECKSUMS:
   ReactCommon: 09e5005e0ea50a4e36f412990212140e5b8f1db3
   ReactNativeIncallManager: ef7b845e166f04cf8ddf433d8a23227b01cef87a
   RNCMaskedView: 972c098900ec45a5684a6785a7af405e8b0fc1e1
+  RNDeviceInfo: d863506092aef7e7af3a1c350c913d867d795047
   RNFBApp: 32f7425af42aef99472dd46e14222cb0a8a17504
   RNFBMessaging: 993c913f7a037104b5ae02cadf7fc191545ceb51
   RNGestureHandler: 49f8b57c9492409c46b30585dfa2120626963ffb

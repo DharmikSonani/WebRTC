@@ -276,8 +276,10 @@ export const useAudioDeviceManager = () => {
     };
 
     const switchAudioOutput = async (device) => {
-        const result = await AudioDeviceModule.switchAudioOutput(device);
-        setAudioOutput(result);
+        if (device != audioOutput) {
+            const result = await AudioDeviceModule.switchAudioOutput(device);
+            setAudioOutput(result);
+        }
     };
 
     return {

@@ -119,10 +119,9 @@ npx react-native run-android
 
 ## iOS Setup (Required)
 
-### 1. Create the Audio Device Manager Module
-
-#### **Step 1: Add `AudioDeviceManager.swift`**
-Create a new file at `ios/AudioDeviceManager.swift` and add the following code:
+### Create the Audio Device Manager Module
+### 1. Add `AudioDeviceManager.swift`
+##### Create a new file at `ios/AudioDeviceManager.swift` and add the following code:
 
 ```swift
 import AVFoundation
@@ -177,15 +176,15 @@ class AudioDeviceManager: NSObject, RCTBridgeModule {
 }
 ```
 
-#### **Step 2: Create the Bridging Header**
-Create a file named `ios/<YourApplicationName>-Bridging-Header.h` and add:
+### 2. Create the Bridging Header
+##### Create a file named `ios/<YourApplicationName>-Bridging-Header.h` and add:
 
 ```objc
 #import "React/RCTBridgeModule.h"
 ```
 
-#### **Step 3: Create the Objective-C Interface**
-Create a file named `ios/AudioDeviceManager.m` and add:
+### 3. Create the Objective-C Interface
+##### Create a file named `ios/AudioDeviceManager.m` and add:
 
 ```objc
 #import "React/RCTBridgeModule.h"
@@ -195,15 +194,15 @@ RCT_EXTERN_METHOD(switchAudioOutput:(NSString *)deviceType resolver:(RCTPromiseR
 @end
 ```
 
-### 2. Rebuild the Project
-After adding the native module, rebuild the project to apply the changes:
+### 4. Rebuild the Project
+##### After adding the native module, rebuild the project to apply the changes:
 
 ```sh
 cd ios && pod install && cd ..
 npx react-native run-ios
 ```
 
-Your iOS audio device management module is now set up and ready to use!
+##### Your iOS audio device management module is now set up and ready to use!
 
 ## Usage - useAudioDeviceManager hook
 #### Required Dependencies

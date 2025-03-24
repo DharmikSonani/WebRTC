@@ -121,7 +121,7 @@ npx react-native run-android
 
 ### Create the Audio Device Manager Module
 ### 1. Add `AudioDeviceManager.swift`
-##### Create a new file at `ios/AudioDeviceManager.swift` and add the following code:
+##### **File:** [`ios/AudioDeviceManager.swift`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/ios/AudioDeviceManager.swift)
 
 ```swift
 import AVFoundation
@@ -177,14 +177,14 @@ class AudioDeviceManager: NSObject, RCTBridgeModule {
 ```
 
 ### 2. Create the Bridging Header
-##### Create a file named `ios/<YourApplicationName>-Bridging-Header.h` and add:
+##### **File:** [`ios/<YourApplicationName>-Bridging-Header.h`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/ios/WebrtcApp-Bridging-Header.h)
 
 ```objc
 #import "React/RCTBridgeModule.h"
 ```
 
 ### 3. Create the Objective-C Interface
-##### Create a file named `ios/AudioDeviceManager.m` and add:
+##### **File:** [`ios/AudioDeviceManager.m`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/ios/AudioDeviceManager.m)
 
 ```objc
 #import "React/RCTBridgeModule.h"

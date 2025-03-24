@@ -2,9 +2,7 @@
 
 This section explains the setup and implementation for managing audio devices in your application using WebRTC.
 
-## Native Setup
-
-### Android Setup
+## Android Setup (Required)
 
 This section explains how to set up and integrate the `AudioDeviceModule` for managing audio output devices natively in an Android application.
 
@@ -119,7 +117,7 @@ cd android && ./gradlew clean && cd ..
 npx react-native run-android
 ```
 
-### iOS Setup
+## iOS Setup (Required)
 
 
 #### Required Dependencies

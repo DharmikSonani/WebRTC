@@ -121,7 +121,7 @@ npx react-native run-android
 
 ### Create the Audio Device Manager Module
 ### 1. Add `AudioDeviceModule.swift`
-##### **File:** [`ios/AudioDeviceModule.swift`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/ios/AudioDeviceModule.swift)
+#### **File:** [`ios/AudioDeviceModule.swift`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/ios/AudioDeviceModule.swift)
 
 ```swift
 //
@@ -185,7 +185,7 @@ class AudioDeviceModule: NSObject, RCTBridgeModule {
 ```
 
 ### 2. Create the Bridging Header
-##### **File:** [`ios/<YourApplicationName>-Bridging-Header.h`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/ios/WebrtcApp-Bridging-Header.h)
+#### **File:** [`ios/<YourApplicationName>-Bridging-Header.h`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/ios/WebrtcApp-Bridging-Header.h)
 
 ```objc
 //
@@ -197,7 +197,7 @@ class AudioDeviceModule: NSObject, RCTBridgeModule {
 ```
 
 ### 3. Create the Objective-C Interface
-##### **File:** [`ios/AudioDeviceModule.m`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/ios/AudioDeviceModule.m)
+#### **File:** [`ios/AudioDeviceModule.m`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/ios/AudioDeviceModule.m)
 
 ```objc
 //
@@ -217,14 +217,15 @@ RCT_EXTERN_METHOD(switchAudioOutput:(NSString *)deviceType resolver:(RCTPromiseR
 ```
 
 ### 4. Rebuild the Project
-##### After adding the native module, rebuild the project to apply the changes:
+#### After adding the native module, rebuild the project to apply the changes:
 
 ```sh
 cd ios && pod install && cd ..
 npx react-native run-ios
 ```
 
-##### Your iOS audio device management module is now set up and ready to use!
+#### Your iOS audio device management module is now set up and ready to use!
+#### Trubleshoot: [`Watch Video`](https://youtu.be/9YgzPibLtjA?si=FM7PcdBkSCkBKtoD)
 
 ## Usage - useAudioDeviceManager hook
 #### Required Dependencies

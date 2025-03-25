@@ -1,11 +1,19 @@
+//
+//  AudioDeviceModule.swift
+//  WebRTC
+//
+//  Created by Dharmik Sonani on 3/25/25.
+//
+
+import Foundation
 import AVFoundation
 import React
 
-@objc(AudioDeviceManager)
-class AudioDeviceManager: NSObject, RCTBridgeModule {
+@objc(AudioDeviceModule)
+class AudioDeviceModule: NSObject, RCTBridgeModule {
   
   static func moduleName() -> String {
-    return "AudioDeviceManager"
+    return "AudioDeviceModule"
   }
   
   @objc

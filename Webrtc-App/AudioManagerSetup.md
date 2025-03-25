@@ -120,18 +120,26 @@ npx react-native run-android
 ## iOS Setup (Required)
 
 ### Create the Audio Device Manager Module
-### 1. Add `AudioDeviceManager.swift`
-##### **File:** [`ios/AudioDeviceManager.swift`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/ios/AudioDeviceManager.swift)
+### 1. Add `AudioDeviceModule.swift`
+##### **File:** [`ios/AudioDeviceModule.swift`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/ios/AudioDeviceModule.swift)
 
 ```swift
+//
+//  AudioDeviceModule.swift
+//  WebRTC
+//
+//  Created by Dharmik Sonani on 3/25/25.
+//
+
+import Foundation
 import AVFoundation
 import React
 
-@objc(AudioDeviceManager)
-class AudioDeviceManager: NSObject, RCTBridgeModule {
+@objc(AudioDeviceModule)
+class AudioDeviceModule: NSObject, RCTBridgeModule {
   
   static func moduleName() -> String {
-    return "AudioDeviceManager"
+    return "AudioDeviceModule"
   }
   
   @objc
@@ -180,16 +188,30 @@ class AudioDeviceManager: NSObject, RCTBridgeModule {
 ##### **File:** [`ios/<YourApplicationName>-Bridging-Header.h`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/ios/WebrtcApp-Bridging-Header.h)
 
 ```objc
+//
+//  Use this file to import your target's public headers that you would like to expose to Swift.
+//
+
 #import "React/RCTBridgeModule.h"
+#import "React/RCTEventEmitter.h"
 ```
 
 ### 3. Create the Objective-C Interface
-##### **File:** [`ios/AudioDeviceManager.m`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/ios/AudioDeviceManager.m)
+##### **File:** [`ios/AudioDeviceModule.m`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/ios/AudioDeviceModule.m)
 
 ```objc
-#import "React/RCTBridgeModule.h"
+//
+//  AudioDeviceModule.m
+//  WebRTC
+//
+//  Created by Dharmik Sonani on 3/25/25.
+//
 
-@interface RCT_EXTERN_MODULE(AudioDeviceManager, NSObject)
+#import <Foundation/Foundation.h>
+#import "React/RCTBridgeModule.h"
+#import "React/RCTEventEmitter.h"
+
+@interface RCT_EXTERN_MODULE(AudioDeviceModule, RCTEventEmitter)
 RCT_EXTERN_METHOD(switchAudioOutput:(NSString *)deviceType resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 @end
 ```

@@ -211,9 +211,10 @@ npx react-native run-ios
 #### Code Implementation [`src/hooks/video-call/useAudioDeviceManager.js`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/src/hooks/video-call/useAudioDeviceManager.js)
 
 ```javascript
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DeviceEventEmitter, NativeModules } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import inCallManager from 'react-native-incall-manager';
 
 const { AudioDeviceModule } = NativeModules;
 
@@ -224,14 +225,12 @@ export const useAudioDeviceManager = () => {
         bluetooth: 'BLUETOOTH',
     };
 
-    const bluetoothConnected = useRef(false);
+    const [bluetoothConnected, setBluetoothConnected] = useState(false);
 
     const [audioOutput, setAudioOutput] = useState(audioDevices.speaker);
     const [availableDevices, setAvailableDevices] = useState([audioDevices.speaker]);
 
     useEffect(() => {
-        checkAudioDevice();
-
         const deviceListener = DeviceEventEmitter.addListener(
             'RNDeviceInfo_headphoneConnectionDidChange',
             checkAudioDevice
@@ -239,10 +238,7 @@ export const useAudioDeviceManager = () => {
 
         const bluetoothCheckInterval = setInterval(async () => {
             const isBluetoothConnected = await DeviceInfo.isBluetoothHeadphonesConnected();
-            if (isBluetoothConnected != bluetoothConnected.current) {
-                bluetoothConnected.current = isBluetoothConnected;
-                checkAudioDevice();
-            }
+            setBluetoothConnected(pre => pre != isBluetoothConnected ? isBluetoothConnected : pre);
         }, 1000);
 
         return () => {
@@ -250,6 +246,10 @@ export const useAudioDeviceManager = () => {
             clearInterval(bluetoothCheckInterval);
         };
     }, []);
+
+    useEffect(() => { checkAudioDevice(); }, [bluetoothConnected])
+
+    useEffect(() => { switchAudioOutput(audioOutput); }, [audioOutput, availableDevices])
 
     const checkAudioDevice = async () => {
         const isBluetoothConnected = await DeviceInfo.isBluetoothHeadphonesConnected();
@@ -267,25 +267,24 @@ export const useAudioDeviceManager = () => {
         setAvailableDevices(devices);
 
         if (isBluetoothConnected) {
-            switchAudioOutput(audioDevices.bluetooth);
+            setAudioOutput(audioDevices.bluetooth);
         } else if (isWiredHeadsetConnected) {
-            switchAudioOutput(audioDevices.wiredHeadset);
+            setAudioOutput(audioDevices.wiredHeadset);
         } else {
-            switchAudioOutput(audioDevices.speaker);
+            setAudioOutput(audioDevices.speaker);
         }
     };
 
     const switchAudioOutput = async (device) => {
-        if (device != audioOutput) {
-            const result = await AudioDeviceModule.switchAudioOutput(device);
-            setAudioOutput(result);
-        }
+        inCallManager.setForceSpeakerphoneOn(device == audioDevices.speaker);
+        inCallManager.setSpeakerphoneOn(device == audioDevices.speaker);
+        await AudioDeviceModule.switchAudioOutput(device);
     };
 
     return {
         audioOutput,
         availableDevices,
-        switchAudioOutput,
+        switchAudioOutput: setAudioOutput,
     };
 };
 ```

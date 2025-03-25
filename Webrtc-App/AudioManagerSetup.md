@@ -180,7 +180,12 @@ class AudioDeviceManager: NSObject, RCTBridgeModule {
 ##### **File:** [`ios/<YourApplicationName>-Bridging-Header.h`](https://github.com/DharmikSonani/WebRTC/blob/Audio-Manager/Webrtc-App/ios/WebrtcApp-Bridging-Header.h)
 
 ```objc
+//
+//  Use this file to import your target's public headers that you would like to expose to Swift.
+//
+
 #import "React/RCTBridgeModule.h"
+#import "React/RCTEventEmitter.h"
 ```
 
 ### 3. Create the Objective-C Interface

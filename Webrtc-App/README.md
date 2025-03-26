@@ -709,7 +709,7 @@ export const useWebrtcForVC = ({
     // Custom Hooks
     const { permissionsGranted, checkAndRequestPermissions } = useVideoCallPermissions();
     const { peerConnection } = usePeerConnection();
-    const { audioOutput, availableDevices, switchAudioOutput } = useAudioDeviceManager();
+    const { audioOutput, availableDevices, switchAudioOutput, checkAudioDevice } = useAudioDeviceManager(); 
 
     // State
     const [localStream, setLocalStream] = useState(null); // Local User Stream
@@ -736,6 +736,13 @@ export const useWebrtcForVC = ({
     useEffect(() => {
         if (!isFocus) cleanUpStream();
     }, [isFocus]);
+
+    useEffect(() => {
+        InCallManager.stopProximitySensor();
+        return () => { InCallManager.startProximitySensor(); }
+    }, [])
+
+    useEffect(() => { checkAudioDevice() }, [callConnected])
 
     // Start Call (Caller)
     const onStartCall = async () => {

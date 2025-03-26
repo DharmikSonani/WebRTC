@@ -235,7 +235,7 @@ npx react-native run-ios
 
 ```javascript
 import { useEffect, useState } from 'react';
-import { DeviceEventEmitter, NativeModules } from 'react-native';
+import { NativeModules } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import inCallManager from 'react-native-incall-manager';
 
@@ -249,28 +249,23 @@ export const useAudioDeviceManager = () => {
     };
 
     const [bluetoothConnected, setBluetoothConnected] = useState(false);
+    const [wiredHeadsetConnected, setWiredHeadsetConnected] = useState(false);
 
     const [audioOutput, setAudioOutput] = useState(audioDevices.speaker);
     const [availableDevices, setAvailableDevices] = useState([audioDevices.speaker]);
 
     useEffect(() => {
-        const deviceListener = DeviceEventEmitter.addListener(
-            'RNDeviceInfo_headphoneConnectionDidChange',
-            checkAudioDevice
-        );
-
-        const bluetoothCheckInterval = setInterval(async () => {
+        const deviceCheckInterval = setInterval(async () => {
             const isBluetoothConnected = await DeviceInfo.isBluetoothHeadphonesConnected();
-            setBluetoothConnected(pre => pre != isBluetoothConnected ? isBluetoothConnected : pre);
-        }, 1000);
+            const isWiredHeadphonesConnected = await DeviceInfo.isWiredHeadphonesConnected();
+            setBluetoothConnected(isBluetoothConnected);
+            setWiredHeadsetConnected(isWiredHeadphonesConnected);
+        }, 1500);
 
-        return () => {
-            deviceListener.remove();
-            clearInterval(bluetoothCheckInterval);
-        };
+        return () => { clearInterval(deviceCheckInterval); };
     }, []);
 
-    useEffect(() => { checkAudioDevice(); }, [bluetoothConnected])
+    useEffect(() => { checkAudioDevice(); }, [bluetoothConnected, wiredHeadsetConnected])
 
     useEffect(() => { switchAudioOutput(audioOutput); }, [audioOutput, availableDevices])
 
@@ -307,6 +302,7 @@ export const useAudioDeviceManager = () => {
     return {
         audioOutput,
         availableDevices,
+        checkAudioDevice,
         switchAudioOutput: setAudioOutput,
     };
 };
@@ -319,7 +315,6 @@ export const useAudioDeviceManager = () => {
 
 - **useEffect:**
   - Calls `checkAudioDevice` on mount to detect available audio devices.
-  - Listens for changes in wired headset connection using `DeviceEventEmitter`.
   - Checks for Bluetooth device connection every second using `setInterval`.
   - Cleans up listeners and intervals on unmount.
 

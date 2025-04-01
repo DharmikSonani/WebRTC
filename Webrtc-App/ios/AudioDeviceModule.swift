@@ -11,46 +11,54 @@ import React
 
 @objc(AudioDeviceModule)
 class AudioDeviceModule: NSObject, RCTBridgeModule {
-  
+
   static func moduleName() -> String {
     return "AudioDeviceModule"
   }
-  
+
   @objc
   func switchAudioOutput(_ deviceType: String, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
     do {
       let audioSession = AVAudioSession.sharedInstance()
-      
       try audioSession.setActive(true)
-      
-      switch deviceType {
+
+      switch deviceType.uppercased() {
       case "SPEAKER":
-        try audioSession.overrideOutputAudioPort(.speaker)
         try audioSession.setCategory(.playAndRecord, mode: .videoChat, options: [.defaultToSpeaker])
-        
+        try audioSession.overrideOutputAudioPort(.speaker)
+
       case "BLUETOOTH":
-        let availableRoutes = audioSession.currentRoute.outputs
-        let bluetoothRoutes = availableRoutes.filter { $0.portType == .bluetoothA2DP || $0.portType == .bluetoothHFP }
+        let availableInputs = audioSession.availableInputs ?? []
+        let bluetoothDevice = availableInputs.first(where: {
+            $0.portType == .bluetoothHFP || $0.portType == .bluetoothA2DP
+        })
         
-        if !bluetoothRoutes.isEmpty {
+        if bluetoothDevice != nil {
           try audioSession.setCategory(.playAndRecord, mode: .videoChat, options: [.allowBluetooth, .allowBluetoothA2DP])
         }
-        
+
       case "WIRED_HEADSET":
-        try audioSession.setCategory(.playAndRecord, mode: .videoChat, options: [])
+        let availableInputs = audioSession.availableInputs ?? []
+        let wiredHeadset = availableInputs.first(where: {
+            $0.portType == .headphones || $0.portType == .usbAudio
+        })
         
+        if let wiredHeadset = wiredHeadset {
+          try audioSession.setCategory(.playAndRecord, mode: .videoChat, options: [])
+          try audioSession.setPreferredInput(wiredHeadset)
+        }
+
       default:
         try audioSession.setCategory(.playAndRecord, mode: .default, options: [])
       }
-      
-      try audioSession.setActive(true)
+
       resolver("\(deviceType)")
-      
+
     } catch let error {
       rejecter("AUDIO_ERROR", "Failed to switch audio: \(error.localizedDescription)", error)
     }
   }
-  
+
   @objc
   static func requiresMainQueueSetup() -> Bool {
     return true
